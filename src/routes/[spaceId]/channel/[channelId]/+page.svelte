@@ -37,7 +37,15 @@
 		new CoState(Channel, channelId, {
 			resolve: {
 				mainThread: {
-					timeline: true
+					timeline: {
+						$each: {
+							reactions: {
+								$each: {
+									emoji: true
+								}
+							}
+						}
+					}
 				},
 				subThreads: true
 			}
@@ -109,7 +117,7 @@
 <div class="flex w-full flex-col gap-1">
 	{#each channel.current?.mainThread?.timeline ?? [] as message, index}
 		{#if message}
-			<ChatMessage {message} previousMessage={channel.current?.mainThread?.timeline?.[index - 1]} />
+			<ChatMessage {message} previousMessage={channel.current?.mainThread?.timeline?.[index - 1]} me={me.current} />
 		{/if}
 	{/each}
 	{#if channel.current?.mainThread?.timeline?.length === 0}
