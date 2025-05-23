@@ -19,4 +19,4 @@
 
 <Toaster />
 
-<Head title="jazz roomy" emojiFavicon="💭" />
+<Head title="jazz group chat" emojiFavicon="💬" />
