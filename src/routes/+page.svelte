@@ -12,7 +12,7 @@
 	} from '@fuxui/base';
 
 	import { AccountCoState, CoState } from 'jazz-svelte';
-	import { MyAppAccount, SpaceList } from '$lib/schema';
+	import { LastReadList, MyAppAccount, SpaceList } from '$lib/schema';
 	import { createPublicSpacesList, createSpace } from '$lib/utils';
 	import { getRandomUsername } from '$lib/username';
 	import { getProfile, resolveHandle } from '$lib/bluesky';
@@ -100,6 +100,12 @@
 		return URL.createObjectURL(blob);
 	});
 
+	$effect(() => {
+		if (me.current?.root && !me.current.root.lastRead === null) {
+			me.current.root.lastRead = LastReadList.create({});
+			console.log('created last read list');
+		}
+	});
 	onDestroy(() => {
 		if (imageUrl) {
 			URL.revokeObjectURL(imageUrl);

@@ -52,14 +52,35 @@
 		})
 	);
 
-	$inspect(space.current);
-
 	afterNavigate(() => {
 		channelId = page.params.channelId;
 		spaceId = page.params.spaceId;
 
 		console.log('afterNavigate', space.current);
 		console.log('afterNavigate', channel.current);
+
+		setLastRead();
+	});
+
+	function setLastRead() {
+		if (me.current?.root.lastRead) {
+			me.current.root.lastRead[channelId] = new Date();
+			console.log('set last read', me.current.root.lastRead);
+		} else {
+			console.log('no last read');
+		}
+	}
+	// svelte-ignore state_referenced_locally
+	let count = $state(channel.current?.mainThread?.timeline?.length ?? 0);
+
+	$effect(() => {
+		console.log('count', count);
+		let newCount = channel.current?.mainThread?.timeline?.length ?? 0;
+		if (count < newCount) {
+			count = newCount;
+
+			setLastRead();
+		}
 	});
 
 	function handleSubmit() {

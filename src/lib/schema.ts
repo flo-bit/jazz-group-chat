@@ -50,8 +50,11 @@ export const MyAppProfile = co.profile({
 	blueskyHandle: z.string().optional()
 });
 
+export const LastReadList = co.record(z.string(), z.date());
+
 export const MyAppRoot = co.map({
-	joinedSpaces: SpaceList
+	joinedSpaces: SpaceList,
+	lastRead: LastReadList
 });
 
 export const MyAppAccount = co
@@ -62,7 +65,8 @@ export const MyAppAccount = co
 	.withMigration((account, creationProps?: { name: string }) => {
 		if (account.root === undefined) {
 			account.root = MyAppRoot.create({
-				joinedSpaces: SpaceList.create([])
+				joinedSpaces: SpaceList.create([]),
+				lastRead: LastReadList.create({})
 			});
 		}
 

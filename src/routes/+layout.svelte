@@ -4,6 +4,7 @@
 	import { Head, Toaster } from '@fuxui/base';
 	import { JazzProvider } from 'jazz-svelte';
 	import { MyAppAccount } from '$lib/schema';
+	import { dev } from '$app/environment';
 
 	let { children } = $props();
 </script>
@@ -19,4 +20,4 @@
 
 <Toaster />
 
-<Head title="jazz group chat" emojiFavicon="💬" />
+<Head title="jazz group chat" emojiFavicon={dev ? '🔥' : '💬'} />

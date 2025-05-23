@@ -31,7 +31,6 @@
 	function convertReactionsToEmojis(reactions: Loaded<typeof Reaction>[]) {
 		if (!reactions) return [];
 
-		console.log(reactions);
 		// convert to [emoji, count, user (if current user has reacted with that emoji)]
 		const emojiMap = new Map<string, { count: number; user: boolean }>();
 		for (const reaction of reactions) {
@@ -54,7 +53,6 @@
 			count: obj.count,
 			user: obj.user
 		}));
-		console.log(array);
 		return array;
 	}
 
@@ -99,8 +97,8 @@
 
 	<div class="flex flex-col gap-1">
 		{#if !isSameUser}
-			<span class="text-accent-600 dark:text-accent-400 text-sm font-medium">
-				{profile?.current?.name}
+			<span class="text-accent-600 dark:text-accent-400 text-sm font-medium flex gap-2 items-center">
+				<span>{profile?.current?.name}</span>
 				<RelativeTime
 					date={message.createdAt}
 					locale="en"
@@ -113,7 +111,7 @@
 		</Prose>
 
 		{#if reactions.length > 0}
-			<div class="flex flex-wrap gap-1 pb-1">
+			<div class="flex flex-wrap gap-1 pb-2">
 				{#each reactions as reaction}
 					<Toggle
 						bind:pressed={
@@ -157,7 +155,6 @@
 			>
 				<PopoverEmojiPicker
 					onpicked={(emoji) => {
-						console.log(emoji);
 						pickerOpen = false;
 
 						if (reactions.find((r) => r.emoji === emoji.unicode)?.user) {
