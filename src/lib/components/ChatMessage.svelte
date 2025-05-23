@@ -17,12 +17,6 @@
 		previousMessage?._edits.content?.by?.profile?.id === message._edits.content?.by?.profile?.id &&
 			(message.createdAt?.getTime() ?? 0) - (previousMessage?.createdAt?.getTime() ?? 0) < 1000 * 60
 	);
-
-	$effect(() => {
-		console.log(message.createdAt);
-		console.log(previousMessage?.createdAt);
-		console.log((message.createdAt?.getTime() ?? 0) - (previousMessage?.createdAt?.getTime() ?? 0));
-	});
 </script>
 
 <div

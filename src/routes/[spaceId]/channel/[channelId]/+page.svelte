@@ -85,14 +85,22 @@
 		// clear message
 	}
 
-	function clickJoinSpace() {
+	async function clickJoinSpace() {
 		console.log('clickJoinSpace', space.current);
-		if (!space.current) return;
+		let toJoinSpace = space.current;
+		if (!toJoinSpace) {
+			toJoinSpace = await Space.load(spaceId);
+		}
 
-		joinSpace(space.current);
-		me.current?.root.joinedSpaces?.unshift(space.current);
+		if (!toJoinSpace) {
+			console.error('space not found');
+			return;
+		}
 
-		console.log('joined space', space.current);
+		joinSpace(toJoinSpace);
+		me.current?.root.joinedSpaces?.unshift(toJoinSpace);
+
+		console.log('joined space', toJoinSpace);
 	}
 
 	let input = $state('');
