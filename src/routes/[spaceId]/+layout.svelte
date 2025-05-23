@@ -20,6 +20,7 @@
 	import { type Loaded } from 'jazz-tools';
 	import Container from '$lib/components/Container.svelte';
 	import SpaceSelection from '$lib/SpaceSelection.svelte';
+	import ThemeSelectDropdown from '$lib/components/ThemeSelectDropdown.svelte';
 
 	let spaceId: string = $state(page.params.spaceId);
 
@@ -87,7 +88,10 @@
 		</Button>
 	</div>
 
-	<ThemeToggle />
+	<div class="flex items-center gap-2">
+		<ThemeSelectDropdown />
+		<ThemeToggle />
+	</div>
 </Navbar>
 
 <Sidebar class="dark:bg-base-900 bg-white px-2 pt-4">
