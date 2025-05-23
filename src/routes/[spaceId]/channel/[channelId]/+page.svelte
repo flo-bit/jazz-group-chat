@@ -5,7 +5,7 @@
 	import ChatMessage from '$lib/components/ChatMessage.svelte';
 	import Container from '$lib/components/Container.svelte';
 	import { RichTextEditor } from '$lib/components/rich-text-editor';
-	import { Channel, Message, MyAppAccount, Reaction, Space } from '$lib/schema';
+	import { Channel, LastReadList, Message, MyAppAccount, Reaction, Space } from '$lib/schema';
 	import { joinSpace, publicGroup } from '$lib/utils';
 	import { Button, Prose } from '@fuxui/base';
 	import { AccountCoState, CoState } from 'jazz-svelte';
@@ -63,10 +63,17 @@
 	});
 
 	function setLastRead() {
+		if(!me.current) {
+			console.log('no account');
+			return;
+		}
 		if (me.current?.root.lastRead) {
 			me.current.root.lastRead[channelId] = new Date();
 			console.log('set last read', me.current.root.lastRead);
 		} else {
+			me.current.root.lastRead = LastReadList.create({
+				[channelId]: new Date()
+			});
 			console.log('no last read');
 		}
 	}
