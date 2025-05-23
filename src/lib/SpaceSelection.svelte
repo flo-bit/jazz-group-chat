@@ -47,9 +47,11 @@
 	}
 </script>
 
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 {#if open}
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<div
-		class="bg-base-300/20 fixed inset-0 z-50 h-[100dvh] w-full touch-none overflow-hidden backdrop-blur-lg select-none"
+		class="bg-base-300/20 dark:bg-base-950/20 fixed inset-0 z-50 h-[100dvh] w-full touch-none overflow-hidden backdrop-blur-lg select-none"
 		onwheel={onWheel}
 		onpointerdown={onPointerDown}
 		onpointermove={onPointerMove}
@@ -72,7 +74,7 @@
 				{@const θ = i * angularWidth}
 
 				<div
-					class="border-base-200 dark:bg-base-950 absolute flex h-48 w-48 items-center justify-center rounded-xl border bg-white p-2 text-xl font-bold shadow-lg transition-transform duration-300 hover:z-50 hover:scale-105"
+					class="border-base-200 dark:bg-base-950 absolute flex h-48 w-48 items-center justify-center rounded-xl border bg-white p-2 text-xl font-bold shadow-lg transition-transform duration-300 hover:z-50 hover:scale-105 dark:border-base-800"
 					style="
 			transform:
 			  rotate({θ}deg)
