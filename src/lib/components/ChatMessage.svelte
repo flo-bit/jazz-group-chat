@@ -1,14 +1,15 @@
 <script lang="ts">
 	import type { Loaded } from 'jazz-tools';
-	import { Message, MyAppAccount, MyAppProfile, Reaction } from '$lib/schema';
+	import { Message, MyAppAccount, MyAppProfile, Reaction, Space } from '$lib/schema';
 	import { Avatar, cn, Prose } from '@fuxui/base';
 	import { CoState } from 'jazz-svelte';
 	import RelativeTime from 'svelte-relative-time';
-	import { publicGroup } from '$lib/utils';
+	import { isSpaceAdmin, publicGroup } from '$lib/utils';
 	import ChatMessageMenu from './ChatMessageMenu.svelte';
 	import ChatReactions from './ChatReactions.svelte';
 	import ReplyMessage from './ReplyMessage.svelte';
 	import ChatMessageThread from './ChatMessageThread.svelte';
+	import { useCurrentRoute } from '$lib/context';
 
 	let {
 		message,
@@ -39,13 +40,27 @@
 	let profile = $derived(new CoState(MyAppProfile, message._edits.content?.by?.profile?.id));
 
 	// if the same user and the message was created in the last minute, don't show the border, username or avatar
-	let isSameUser = $derived(
-		previousMessage?._edits?.content?.by?.profile?.id ===
-			message._edits?.content?.by?.profile?.id &&
-			(message.createdAt?.getTime() ?? 0) - (previousMessage?.createdAt?.getTime() ?? 0) <
-				1000 * 60 &&
-			!message.replyTo
-	);
+	let isSameUser = $derived.by(() => {
+		if (!previousMessage) return false;
+		if (previousMessage.softDeleted) return false;
+		if (previousMessage._edits.content?.by?.profile?.id !== message._edits.content?.by?.profile?.id)
+			return false;
+		if (message.replyTo) return false;
+		return (
+			(message.createdAt?.getTime() ?? 0) - (previousMessage?.createdAt?.getTime() ?? 0) < 1000 * 60
+		);
+	});
+
+	let route = useCurrentRoute();
+
+	let canSoftDelete = $derived.by(() => {
+		// is admin
+		let space = new CoState(Space, route.spaceId);
+		if (!space.current) return false;
+		if (isSpaceAdmin(space.current)) return true;
+		// if is the same user
+		return message._edits.content?.by?.profile?.id === me.profile?.id;
+	});
 
 	let pickerOpen = $state(false);
 	let hovering = $state(false);
@@ -100,13 +115,19 @@
 		);
 	}
 
+	function softDelete() {
+		message.softDeleted = true;
+	}
+
 	let reactions = $derived(convertReactionsToEmojis(message.reactions));
 </script>
 
 <div
 	class={cn(
-		'flex w-full flex-col gap-2 select-text py-1 max-w-full',
-		!isSameUser && showDivider ? 'border-base-200/70 dark:border-base-900/50 border-t pt-2 pb-2' : '-my-1.5'
+		'flex w-full max-w-full flex-col gap-2 py-1 select-text',
+		!isSameUser && showDivider
+			? 'border-base-200/70 dark:border-base-900/50 border-t pt-2 pb-2'
+			: '-my-1.5'
 	)}
 >
 	{#if message.replyTo && showReply}
@@ -155,11 +176,16 @@
 				{removeReaction}
 				{allowThreadCreation}
 				createThread={() => createThread(message)}
+				{softDelete}
+				{canSoftDelete}
 			/>
 		{/if}
 	</div>
 
 	{#if showThread && message.thread}
-		<ChatMessageThread threadId={message.thread} lastReadDate={me?.root?.lastRead?.[message.thread]} />
+		<ChatMessageThread
+			threadId={message.thread}
+			lastReadDate={me?.root?.lastRead?.[message.thread]}
+		/>
 	{/if}
 </div>

@@ -42,7 +42,7 @@
 
 <Subheading class="mt-4 mb-2">Channels</Subheading>
 
-<div class="flex flex-col items-start justify-start gap-2">
+<div class="flex flex-col items-start justify-start gap-2 w-full">
 	{#each space?.current?.channels ?? [] as channel}
 		{#if channel}
 			<ChannelButton channel={channel} lastReadDate={me?.current?.root?.lastRead?.[channel.id]} />

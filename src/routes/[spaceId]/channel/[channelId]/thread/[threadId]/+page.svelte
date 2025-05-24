@@ -141,7 +141,7 @@
 
 <div class="flex w-full flex-col gap-1">
 	{#each thread.current?.timeline ?? [] as message, index}
-		{#if message}
+		{#if message && !message.softDeleted}
 			<ChatMessage
 				{setReplyTo}
 				{message}

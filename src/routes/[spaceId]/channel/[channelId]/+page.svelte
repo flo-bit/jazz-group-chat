@@ -184,7 +184,7 @@
 {#if view.active === 'channel'}
 	<div class="flex w-full flex-col gap-1">
 		{#each channel.current?.mainThread?.timeline ?? [] as message, index}
-			{#if message}
+			{#if message && !message.softDeleted}
 				<ChatMessage
 					{setReplyTo}
 					{message}

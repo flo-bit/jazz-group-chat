@@ -59,7 +59,7 @@
 			<span class="absolute inset-0"></span>
 			{thread.current?.name}</a
 		>
-		({thread.current?.timeline?.length} messages)
+		({thread.current?.timeline?.filter((m) => !m?.softDeleted).length} messages)
 
 		{#if lastMessage}
 			<span class="text-base-600 dark:text-base-400 text-xs">

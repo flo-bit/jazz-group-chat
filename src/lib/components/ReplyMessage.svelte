@@ -29,8 +29,12 @@
 			{profile?.current?.name}</span
 		>
 
+		{#if message.current.softDeleted}
+			<span class="text-base-600 dark:text-base-400 py-1">Message deleted</span>
+		{:else}
 		<Prose class="truncate">
 			{@html message.current?.content}
 		</Prose>
+		{/if}
 	</div>
 {/if}

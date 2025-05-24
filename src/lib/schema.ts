@@ -16,7 +16,9 @@ export const Message = co.map({
 	reactions: co.list(Reaction),
 	type: z.enum(['message', 'announcement']),
 
-	thread: z.string().optional()
+	thread: z.string().optional(),
+
+	softDeleted: z.boolean().optional()
 });
 
 export const Timeline = co.list(Message);
