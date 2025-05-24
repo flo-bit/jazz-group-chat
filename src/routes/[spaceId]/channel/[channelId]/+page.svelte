@@ -3,11 +3,21 @@
 	import ChatInput from '$lib/components/ChatInput.svelte';
 	import ChatMessage from '$lib/components/ChatMessage.svelte';
 	import { useCurrentRoute } from '$lib/context';
-	import { Channel, LastReadList, Message, MyAppAccount, Reaction, Space, Thread } from '$lib/schema';
+	import {
+		Channel,
+		LastReadList,
+		Message,
+		MyAppAccount,
+		Reaction,
+		Space,
+		Thread
+	} from '$lib/schema';
 	import { joinSpace, publicGroup } from '$lib/utils';
 	import { Button, Heading, Input, Modal } from '@fuxui/base';
 	import { AccountCoState, CoState } from 'jazz-svelte';
 	import { co, CoRichText, type Loaded } from 'jazz-tools';
+	import { view } from '../../view.svelte';
+	import ChatMessageThread from '$lib/components/ChatMessageThread.svelte';
 
 	const route = useCurrentRoute();
 
@@ -171,35 +181,48 @@
 	}
 </script>
 
-<div class="flex w-full flex-col gap-1">
-	{#each channel.current?.mainThread?.timeline ?? [] as message, index}
-		{#if message}
-			<ChatMessage
-				{setReplyTo}
-				{message}
-				previousMessage={channel.current?.mainThread?.timeline?.[index - 1]}
-				me={me?.current}
-				createThread={(message) => {
-					threadMessage = message;
-					createThreadModalOpen = true;
-				}}
-			/>
+{#if view.active === 'channel'}
+	<div class="flex w-full flex-col gap-1">
+		{#each channel.current?.mainThread?.timeline ?? [] as message, index}
+			{#if message}
+				<ChatMessage
+					{setReplyTo}
+					{message}
+					previousMessage={channel.current?.mainThread?.timeline?.[index - 1]}
+					me={me?.current}
+					createThread={(message) => {
+						threadMessage = message;
+						createThreadModalOpen = true;
+					}}
+				/>
+			{/if}
+		{/each}
+		{#if channel.current?.mainThread?.timeline?.length === 0}
+			<div class="text-base-600 dark:text-base-400 h-30 text-sm">
+				No messages yet. Be the first to send a message!
+			</div>
 		{/if}
-	{/each}
-	{#if channel.current?.mainThread?.timeline?.length === 0}
-		<div class="text-base-600 dark:text-base-400 h-30 text-sm">
-			No messages yet. Be the first to send a message!
-		</div>
-	{/if}
-</div>
+	</div>
 
-<ChatInput
-	bind:replyTo
-	me={me?.current}
-	{handleSubmit}
-	{clickJoinSpace}
-	bind:value={input}
-/>
+	<ChatInput bind:replyTo me={me?.current} {handleSubmit} {clickJoinSpace} bind:value={input} />
+{:else}
+	<div class="flex w-full flex-col gap-2">
+		{#each channel.current?.subThreads ?? [] as thread}
+			{#if thread}
+				<ChatMessageThread
+					threadId={thread.id}
+					indented={false}
+					lastReadDate={me?.current?.root?.lastRead?.[thread.id]}
+				/>
+			{/if}
+		{/each}
+		{#if channel.current?.subThreads?.length === 0}
+			<div class="text-base-600 dark:text-base-400 h-30 text-sm">
+				No threads yet. Be the first to create a thread!
+			</div>
+		{/if}
+	</div>
+{/if}
 
 <Modal bind:open={createThreadModalOpen}>
 	<div class="flex flex-col gap-4">

@@ -160,6 +160,6 @@
 	</div>
 
 	{#if showThread && message.thread}
-		<ChatMessageThread threadId={message.thread} />
+		<ChatMessageThread threadId={message.thread} lastReadDate={me?.root?.lastRead?.[message.thread]} />
 	{/if}
 </div>

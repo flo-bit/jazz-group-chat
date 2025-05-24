@@ -3,16 +3,42 @@
 	import { Thread } from '$lib/schema';
 	import { CoState } from 'jazz-svelte';
 	import { useCurrentRoute } from '$lib/context';
-	let { threadId }: { threadId: string } = $props();
+	import { cn } from '@fuxui/base';
+	import RelativeTime from 'svelte-relative-time';
+	let {
+		threadId,
+		indented = true,
+		lastReadDate
+	}: { threadId: string; indented?: boolean; lastReadDate?: Date } = $props();
 
 	let thread = $derived(new CoState(Thread, threadId));
 
 	const route = useCurrentRoute();
+
+	// get the last message in the thread
+	let lastMessage = $derived(thread.current?.timeline?.at(-1));
+
+	let isNew = $derived.by(() => {
+		if (!lastReadDate) return thread.current?.timeline?.length !== 0;
+		if (!lastMessage) return false;
+		let date = lastMessage.createdAt;
+		if (!date) return false;
+
+		return new Date(lastReadDate) < date;
+	});
 </script>
 
 <div
-	class="text-base-600 dark:text-base-400 bg-base-200/50 dark:bg-base-900/40 border-base-300/50 dark:border-base-800/30 relative ml-10 inline-flex items-center justify-between gap-2 rounded-2xl border px-4 py-3 text-sm sm:ml-12"
+	class={cn(
+		'text-base-600 dark:text-base-400 bg-base-200/50 dark:bg-base-900/40 border-base-300/50 dark:border-base-800/30 relative inline-flex items-center justify-between gap-2 rounded-2xl border px-4 py-3 text-sm',
+		indented ? 'ml-10 sm:ml-12' : ''
+	)}
 >
+	{#if isNew}
+		<div class="absolute top-2 left-2">
+			<div class="bg-accent-500 dark:bg-accent-600 size-2 rounded-full"></div>
+		</div>
+	{/if}
 	<div class="flex items-center gap-2">
 		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="size-4"
 			><path
@@ -34,6 +60,12 @@
 			{thread.current?.name}</a
 		>
 		({thread.current?.timeline?.length} messages)
+
+		{#if lastMessage}
+			<span class="text-base-600 dark:text-base-400 text-xs">
+				updated <RelativeTime date={lastMessage.createdAt} locale="en" />
+			</span>
+		{/if}
 	</div>
 	<svg
 		xmlns="http://www.w3.org/2000/svg"

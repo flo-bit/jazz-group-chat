@@ -40,7 +40,7 @@
 						viewBox="0 0 24 24"
 						stroke-width="2"
 						stroke="currentColor"
-						class="size-3 mr-1"
+						class="mr-1 size-3"
 					>
 						<path
 							stroke-linecap="round"
@@ -69,7 +69,7 @@
 				</Button>
 			</div>
 		{/if}
-		<Prose class="px-3">
+		<Prose class="px-4" size="md">
 			<RichTextEditor
 				bind:htmlContent={value}
 				onEnter={handleSubmit}

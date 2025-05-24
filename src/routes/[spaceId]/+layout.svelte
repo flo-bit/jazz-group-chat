@@ -9,6 +9,8 @@
 		Input,
 		Modal,
 		Subheading,
+		TabItem,
+		Tabs,
 		ThemeToggle
 	} from '@fuxui/base';
 
@@ -22,6 +24,8 @@
 	import ChannelButton from '$lib/components/ChannelButton.svelte';
 	import { useCurrentRoute } from '$lib/context';
 	import ThreadButton from '$lib/components/ThreadButton.svelte';
+	import { view } from './view.svelte';
+	import { afterNavigate, goto } from '$app/navigation';
 
 	let route = useCurrentRoute();
 
@@ -43,6 +47,15 @@
 		}
 	});
 
+	afterNavigate(() => {
+		if (route.threadId) {
+			view.active = 'threads';
+		} else if(!goToThreads) {
+			view.active = 'channel';
+		}
+		goToThreads = false;
+	});
+
 	let { children } = $props();
 
 	function hideSidebar() {
@@ -61,6 +74,8 @@
 	let newChannelName = $state('');
 
 	let showSpaceSelection = $state(false);
+
+	let goToThreads = $state(false);
 </script>
 
 <Navbar hasSidebar class="dark:bg-base-900 bg-white">
@@ -83,6 +98,32 @@
 				></path>
 			</svg>
 		</Button>
+
+		{#if route.channelId}
+			<Tabs
+				items={[
+					{
+						name: 'channel',
+						onclick: () => {
+							view.active = 'channel';
+							if (route.threadId) {
+								// go to channel
+								goto(`${base}/${route.spaceId}/channel/${route.channelId}`);
+							}
+						}
+					},
+					{
+						name: 'threads',
+						onclick: () => {
+							view.active = 'threads';
+							goToThreads = true;
+							goto(`${base}/${route.spaceId}/channel/${route.channelId}`);
+						}
+					}
+				]}
+				active={view.active}
+			/>
+		{/if}
 	</div>
 
 	<div class="flex items-center gap-2">
@@ -140,7 +181,6 @@
 						onclick={hideSidebar}
 					/>
 
-					
 					{#each channel.subThreads ?? [] as thread}
 						{#if thread}
 							<ThreadButton
