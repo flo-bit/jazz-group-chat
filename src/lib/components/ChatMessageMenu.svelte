@@ -8,7 +8,9 @@
 		reactions,
 		addReaction,
 		removeReaction,
-		setAsReplyTo
+		setAsReplyTo,
+		createThread,
+		allowThreadCreation = true
 	}: {
 		hovering: boolean;
 		open: boolean;
@@ -20,13 +22,15 @@
 		addReaction: (emoji: string) => void;
 		removeReaction: (emoji: string) => void;
 		setAsReplyTo: () => void;
+		createThread: () => void;
+		allowThreadCreation?: boolean;
 	} = $props();
 </script>
 
 {#if hovering || open}
 	<div class={cn('absolute -top-3 right-0')}>
 		<div
-			class="bg-base-200/50 dark:bg-base-900/50 backdrop-blur-sm border-base-300 dark:border-base-800 flex gap-2 rounded-2xl border p-1"
+			class="bg-base-200/50 dark:bg-base-900/50 border-base-300 dark:border-base-800 flex gap-2 rounded-2xl border p-1 backdrop-blur-sm"
 		>
 			<Button variant="ghost" size="iconSm" onclick={setAsReplyTo}
 				><svg
@@ -43,6 +47,23 @@
 					/>
 				</svg>
 			</Button>
+
+			{#if allowThreadCreation}
+				<Button variant="ghost" size="iconSm" onclick={createThread}>
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+						><path
+							fill="none"
+							stroke="currentColor"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="1.5"
+							d="M4.5 7.5h12c1.886 0 2.828 0 3.414.586s.586 1.528.586 3.414v1m-4-2h-12m12 3h-12m12 3h-12m11 3h-10a2 2 0 0 0-2 2h14a2 2 0 0 0-2-2m-10-15h10a2 2 0 0 0 2-2h-14a2 2 0 0 0 2 2"
+							color="currentColor"
+						/></svg
+					>
+				</Button>
+			{/if}
+
 			<PopoverEmojiPicker
 				onpicked={(emoji) => {
 					open = false;

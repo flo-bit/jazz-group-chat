@@ -1,34 +1,30 @@
 <script lang="ts">
-	import { afterNavigate } from '$app/navigation';
-	import { base } from '$app/paths';
-	import { page } from '$app/state';
 	import ChannelButton from '$lib/components/ChannelButton.svelte';
-	import { useMe, useSpace, useSpaceId } from '$lib/context';
+	import { useCurrentRoute } from '$lib/context';
 	import { MyAppAccount, Space } from '$lib/schema';
-	import { Button, Heading, Paragraph, Subheading } from '@fuxui/base';
+	import { Heading, Paragraph, Subheading } from '@fuxui/base';
 	import { AccountCoState, CoState } from 'jazz-svelte';
-	import { getContext } from 'svelte';
 
-	// let spaceId: string = $state(page.params.spaceId);
+	const route = useCurrentRoute();
 
-	const me = useMe();
-	const space = useSpace();
-	const spaceId = useSpaceId();
+	let space = $derived(
+		new CoState(Space, route.spaceId, {
+			resolve: {
+				channels: {
+					$each: true,
+					$onError: null
+				}
+			}
+		})
+	);
 
-	// let space = $derived(
-	// 	new CoState(Space, spaceId, {
-	// 		resolve: {
-	// 			channels: {
-	// 				$each: true,
-	// 				$onError: null
-	// 			}
-	// 		}
-	// 	})
-	// );
+	const me = new AccountCoState(MyAppAccount, {
+		resolve: {
+			profile: true,
+			root: true
+		}
+	});
 
-	// afterNavigate(() => {
-	// 	spaceId = page.params.spaceId;
-	// });
 </script>
 
 <Heading
@@ -49,7 +45,7 @@
 <div class="flex flex-col items-start justify-start gap-2">
 	{#each space?.current?.channels ?? [] as channel}
 		{#if channel}
-			<ChannelButton channel={channel} spaceId={spaceId} lastReadDate={me?.current?.root?.lastRead?.[channel.id]} />
+			<ChannelButton channel={channel} lastReadDate={me?.current?.root?.lastRead?.[channel.id]} />
 		{/if}
 	{/each}
 </div>

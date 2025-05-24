@@ -1,20 +1,8 @@
 <script lang="ts">
-	import {
-		Avatar,
-		Button,
-		cn,
-		Heading,
-		Input,
-		Modal,
-		Subheading,
-		Textarea,
-		ThemeToggle
-	} from '@fuxui/base';
-
+	import { Avatar, Button, cn, Heading, Input, Modal, Subheading, ThemeToggle } from '@fuxui/base';
 	import { AccountCoState, CoState } from 'jazz-svelte';
 	import { LastReadList, MyAppAccount, SpaceList } from '$lib/schema';
-	import { createPublicSpacesList, createSpace } from '$lib/utils';
-	import { getRandomUsername } from '$lib/username';
+	import { createSpace } from '$lib/utils';
 	import { getProfile, resolveHandle } from '$lib/bluesky';
 	import { ImageDefinition } from 'jazz-tools';
 	import { onDestroy } from 'svelte';
@@ -116,8 +104,10 @@
 </script>
 
 <div class={cn('h-[100dvh] px-4')}>
-	<div class="mx-auto flex w-full max-w-2xl flex-col items-start justify-center gap-2 py-24 relative">
-		<div class="flex flex-col items-end gap-2 justify-center w-full">
+	<div
+		class="relative mx-auto flex w-full max-w-2xl flex-col items-start justify-center gap-2 py-24"
+	>
+		<div class="flex w-full flex-col items-end justify-center gap-2">
 			<div class="mx-auto flex items-center gap-2">
 				<Avatar src={me.current?.profile.imageUrl} />
 				<Heading>
@@ -127,8 +117,12 @@
 			</div>
 		</div>
 
-
-		<Button variant="secondary" onclick={() => (editProfileModalOpen = true)} size="sm" class="absolute top-16 right-0">
+		<Button
+			variant="secondary"
+			onclick={() => (editProfileModalOpen = true)}
+			size="sm"
+			class="absolute top-16 right-0"
+		>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
 				fill="none"
@@ -224,7 +218,6 @@
 <CreateSpaceModal bind:open={createNewSpaceModalOpen} {createNewSpace} />
 
 <ThemeToggle class="absolute top-4 right-4" />
-
 
 <svelte:window
 	onkeydown={(e) => {

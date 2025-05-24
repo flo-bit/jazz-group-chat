@@ -2,23 +2,24 @@
 	import { base } from '$app/paths';
 	import { page } from '$app/state';
 	import { Channel } from '$lib/schema';
-	import { Badge, Button } from '@fuxui/base';
+	import { Button } from '@fuxui/base';
 	import type { Loaded } from 'jazz-tools';
+	import { useCurrentRoute } from '$lib/context';
+
+	const route = useCurrentRoute();
 
 	let {
 		channel,
-		spaceId,
 		lastReadDate,
 		onclick
 	}: {
 		channel: Loaded<typeof Channel>;
-		spaceId: string;
 		lastReadDate?: Date;
 		onclick?: () => void;
 	} = $props();
 
 	let isNew = $derived.by(() => {
-		if (!lastReadDate) return true;
+		if (!lastReadDate) return channel.mainThread?.timeline?.length !== 0;
 		if (!channel.mainThread?.timeline) return false;
 		let date = channel.mainThread.timeline[channel.mainThread.timeline.length - 1]?.createdAt;
 		if (!date) return false;
@@ -28,9 +29,9 @@
 </script>
 
 <Button
-	data-current={page.url.pathname === `${base}/${spaceId}/channel/${channel.id}`}
+	data-current={page.url.pathname === `${base}/${route.spaceId}/channel/${channel.id}`}
 	variant="ghost"
-	href="{base}/{spaceId}/channel/{channel.id}"
+	href="{base}/{route.spaceId}/channel/{channel.id}"
 	class="relative w-full justify-start backdrop-blur-none"
 	{onclick}
 >

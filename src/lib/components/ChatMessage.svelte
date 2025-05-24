@@ -8,24 +8,40 @@
 	import ChatMessageMenu from './ChatMessageMenu.svelte';
 	import ChatReactions from './ChatReactions.svelte';
 	import ReplyMessage from './ReplyMessage.svelte';
+	import ChatMessageThread from './ChatMessageThread.svelte';
 
 	let {
 		message,
 		previousMessage,
 		me,
-		setReplyTo
+		setReplyTo,
+		createThread,
+		showMenu = true,
+		showReactions = true,
+		showDivider = true,
+		showReply = true,
+		showThread = true,
+		allowThreadCreation = true
 	}: {
 		message: Loaded<typeof Message>;
 		previousMessage?: Loaded<typeof Message>;
 		me: Loaded<typeof MyAppAccount>;
 		setReplyTo: (message: Loaded<typeof Message>) => void;
+		createThread: (message: Loaded<typeof Message>) => void;
+		showMenu?: boolean;
+		showReactions?: boolean;
+		showDivider?: boolean;
+		showReply?: boolean;
+		showThread?: boolean;
+		allowThreadCreation?: boolean;
 	} = $props();
 
 	let profile = $derived(new CoState(MyAppProfile, message._edits.content?.by?.profile?.id));
 
 	// if the same user and the message was created in the last minute, don't show the border, username or avatar
 	let isSameUser = $derived(
-		previousMessage?._edits.content?.by?.profile?.id === message._edits.content?.by?.profile?.id &&
+		previousMessage?._edits?.content?.by?.profile?.id ===
+			message._edits?.content?.by?.profile?.id &&
 			(message.createdAt?.getTime() ?? 0) - (previousMessage?.createdAt?.getTime() ?? 0) <
 				1000 * 60 &&
 			!message.replyTo
@@ -89,12 +105,12 @@
 
 <div
 	class={cn(
-		'flex w-full flex-col gap-2',
-		!isSameUser ? 'border-base-200/70 dark:border-base-900/50 border-t pt-2 pb-2' : '-my-1.5'
+		'flex w-full flex-col gap-2 select-text py-1 max-w-full',
+		!isSameUser && showDivider ? 'border-base-200/70 dark:border-base-900/50 border-t pt-2 pb-2' : '-my-1.5'
 	)}
 >
-	{#if message.replyTo}
-		<ReplyMessage replyTo={message.replyTo} />
+	{#if message.replyTo && showReply}
+		<ReplyMessage replyToId={message.replyTo} />
 	{/if}
 	<div
 		class={cn('group relative flex w-full justify-start gap-3')}
@@ -124,16 +140,26 @@
 				{@html message.content}
 			</Prose>
 
-			<ChatReactions {reactions} {addReaction} {removeReaction} />
+			{#if showReactions}
+				<ChatReactions {reactions} {addReaction} {removeReaction} />
+			{/if}
 		</div>
 
-		<ChatMessageMenu
-			setAsReplyTo={() => setReplyTo(message)}
-			{hovering}
-			open={pickerOpen}
-			{reactions}
-			{addReaction}
-			{removeReaction}
-		/>
+		{#if showMenu}
+			<ChatMessageMenu
+				setAsReplyTo={() => setReplyTo(message)}
+				{hovering}
+				open={pickerOpen}
+				{reactions}
+				{addReaction}
+				{removeReaction}
+				{allowThreadCreation}
+				createThread={() => createThread(message)}
+			/>
+		{/if}
 	</div>
+
+	{#if showThread && message.thread}
+		<ChatMessageThread threadId={message.thread} />
+	{/if}
 </div>

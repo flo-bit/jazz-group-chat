@@ -4,19 +4,20 @@
 	import type { Loaded } from 'jazz-tools';
 	import { MyAppProfile, type Message, type MyAppAccount } from '$lib/schema';
 	import { CoState } from 'jazz-svelte';
+	import { useCurrentRoute } from '$lib/context';
+
+	const route = useCurrentRoute();
 
 	let {
 		value = $bindable(''),
 		handleSubmit,
 		me,
-		spaceId,
 		clickJoinSpace,
 		replyTo = $bindable(null)
 	}: {
 		value: string;
 		handleSubmit: () => void;
 		me: Loaded<typeof MyAppAccount>;
-		spaceId: string;
 		clickJoinSpace: () => void;
 		replyTo: Loaded<typeof Message> | null;
 	} = $props();
@@ -27,7 +28,7 @@
 <div
 	class="dark:bg-base-900 border-base-200 dark:border-base-800 fixed right-2 bottom-0 left-2 rounded-t-2xl border-x border-t bg-white px-1 shadow-lg lg:left-76"
 >
-	{#if me?.root?.joinedSpaces?.some((space) => space?.id === spaceId)}
+	{#if me?.root?.joinedSpaces?.some((space) => space?.id === route.spaceId)}
 		{#if replyTo}
 			<div
 				class="text-base-600 dark:text-base-400 bg-base-100 dark:bg-base-800 relative mt-1 flex items-center justify-between gap-1 rounded-2xl px-3 py-1 text-xs"

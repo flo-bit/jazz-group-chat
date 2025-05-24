@@ -14,7 +14,9 @@ export const Message = co.map({
 
 	replyTo: z.string().optional(),
 	reactions: co.list(Reaction),
-	type: z.enum(['message', 'announcement'])
+	type: z.enum(['message', 'announcement']),
+
+	thread: z.string().optional()
 });
 
 export const Timeline = co.list(Message);

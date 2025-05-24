@@ -1,7 +1,5 @@
 <script lang="ts">
-	import { afterNavigate } from '$app/navigation';
 	import { base } from '$app/paths';
-	import { page } from '$app/state';
 	import { MyAppAccount, Space } from '$lib/schema';
 	import { createChannel, isSpaceAdmin } from '$lib/utils';
 	import {
@@ -22,12 +20,13 @@
 	import SpaceSelection from '$lib/SpaceSelection.svelte';
 	import ThemeSelectDropdown from '$lib/components/ThemeSelectDropdown.svelte';
 	import ChannelButton from '$lib/components/ChannelButton.svelte';
-	import { setContext } from 'svelte';
+	import { useCurrentRoute } from '$lib/context';
+	import ThreadButton from '$lib/components/ThreadButton.svelte';
 
-	let spaceId: string = $state(page.params.spaceId);
+	let route = useCurrentRoute();
 
 	let space = $derived(
-		new CoState(Space, spaceId, {
+		new CoState(Space, route.spaceId, {
 			resolve: {
 				channels: {
 					$each: true,
@@ -42,20 +41,6 @@
 			profile: true,
 			root: true
 		}
-	});
-
-	setContext('me', me);
-	setContext('space', space);
-	setContext('spaceId', spaceId);
-
-	$effect(() => {
-		setContext('space', space);
-		setContext('spaceId', spaceId);
-		setContext('me', me);
-	});
-
-	afterNavigate(() => {
-		spaceId = page.params.spaceId;
 	});
 
 	let { children } = $props();
@@ -133,7 +118,7 @@
 	<Button
 		variant="ghost"
 		class="mb-2 w-full justify-start backdrop-blur-none"
-		href={`${base}/${spaceId}`}
+		href={`${base}/${route.spaceId}`}
 		onclick={hideSidebar}
 	>
 		<span>{space.current?.emoji}</span>{space.current?.name}
@@ -150,13 +135,23 @@
 			{#each space.current?.channels ?? [] as channel}
 				{#if channel}
 					<ChannelButton
-						channel={channel}
-						spaceId={spaceId}
+						{channel}
 						lastReadDate={me.current?.root.lastRead?.[channel.id]}
-						onclick={() => {
-							hideSidebar();
-						}}
+						onclick={hideSidebar}
 					/>
+
+					
+					{#each channel.subThreads ?? [] as thread}
+						{#if thread}
+							<ThreadButton
+								threadId={thread.id}
+								lastReadDate={me.current?.root.lastRead?.[thread.id]}
+								onclick={hideSidebar}
+								onlyShowIfRecent={thread.id !== route.threadId}
+								channelId={channel.id}
+							/>
+						{/if}
+					{/each}
 				{/if}
 			{/each}
 
@@ -185,7 +180,6 @@
 		</AccordionItem>
 	</Accordion>
 
-
 	<Button
 		variant="ghost"
 		class="mt-16 w-full justify-start backdrop-blur-none"
@@ -205,6 +199,7 @@
 			onsubmit={() => {
 				createNewChannel(space.current, newChannelName);
 				isNewChannelModalOpen = false;
+				newChannelName = '';
 			}}
 			class="flex flex-col gap-2"
 		>
@@ -222,7 +217,9 @@
 	}}
 />
 
-<SpaceSelection spaces={me.current?.root?.joinedSpaces ?? []} bind:open={showSpaceSelection} />
+{#if me.current?.root?.joinedSpaces}
+	<SpaceSelection spaces={me.current?.root?.joinedSpaces} bind:open={showSpaceSelection} />
+{/if}
 
 <Container>
 	{@render children?.()}
