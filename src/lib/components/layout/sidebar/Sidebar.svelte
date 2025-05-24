@@ -21,7 +21,7 @@
 	id="mobile-menu"
 	class={cn(
 		'mobileMenuPopover border-base-200 bg-white/70 dark:border-base-300/10 dark:bg-base-950/50 my-2 ml-0 overflow-y-hidden rounded-r-2xl',
-		'inset-auto left-0 top-0 block h-[calc(100dvh-1rem)] w-72 border shadow-lg lg:hidden backdrop-blur-xl',
+		'inset-auto -left-1 top-0 block h-[calc(100dvh-1rem)] w-72 border shadow-lg lg:hidden backdrop-blur-xl',
 		className,
 		mobileClasses
 	)}

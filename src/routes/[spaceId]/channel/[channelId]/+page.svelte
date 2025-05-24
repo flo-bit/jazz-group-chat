@@ -2,36 +2,23 @@
 	import { afterNavigate } from '$app/navigation';
 	import { base } from '$app/paths';
 	import { page } from '$app/state';
+	import ChatInput from '$lib/components/ChatInput.svelte';
 	import ChatMessage from '$lib/components/ChatMessage.svelte';
 	import Container from '$lib/components/Container.svelte';
 	import { RichTextEditor } from '$lib/components/rich-text-editor';
+	import { useMe, useSpace, useSpaceId } from '$lib/context';
 	import { Channel, LastReadList, Message, MyAppAccount, Reaction, Space } from '$lib/schema';
 	import { joinSpace, publicGroup } from '$lib/utils';
 	import { Button, Prose } from '@fuxui/base';
 	import { AccountCoState, CoState } from 'jazz-svelte';
-	import { co, CoRichText } from 'jazz-tools';
+	import { co, CoRichText, type Loaded } from 'jazz-tools';
 	import { onMount } from 'svelte';
 
 	let channelId = $state(page.params.channelId);
-	let spaceId = $state(page.params.spaceId);
 
-	const me = new AccountCoState(MyAppAccount, {
-		resolve: {
-			profile: true,
-			root: true
-		}
-	});
-
-	let space = $derived(
-		new CoState(Space, spaceId, {
-			resolve: {
-				channels: {
-					$each: true,
-					$onError: null
-				}
-			}
-		})
-	);
+	const me = useMe();
+	const space = useSpace();
+	const spaceId = useSpaceId();
 
 	let channel = $derived(
 		new CoState(Channel, channelId, {
@@ -40,9 +27,7 @@
 					timeline: {
 						$each: {
 							reactions: {
-								$each: {
-									emoji: true
-								}
+								$each: true
 							}
 						}
 					}
@@ -54,22 +39,18 @@
 
 	afterNavigate(() => {
 		channelId = page.params.channelId;
-		spaceId = page.params.spaceId;
-
-		console.log('afterNavigate', space.current);
-		console.log('afterNavigate', channel.current);
 
 		setLastRead();
 	});
 
+
 	function setLastRead() {
-		if(!me.current) {
+		if(!me?.current?.root) {
 			console.log('no account');
 			return;
 		}
-		if (me.current?.root.lastRead) {
+		if (me?.current?.root?.lastRead) {
 			me.current.root.lastRead[channelId] = new Date();
-			console.log('set last read', me.current.root.lastRead);
 		} else {
 			me.current.root.lastRead = LastReadList.create({
 				[channelId]: new Date()
@@ -81,7 +62,6 @@
 	let count = $state(channel.current?.mainThread?.timeline?.length ?? 0);
 
 	$effect(() => {
-		console.log('count', count);
 		let newCount = channel.current?.mainThread?.timeline?.length ?? 0;
 		if (count < newCount) {
 			count = newCount;
@@ -91,12 +71,11 @@
 	});
 
 	function handleSubmit() {
-		console.log('input', input);
 		let newContent = new CoRichText({
 			text: input,
 			owner: publicGroup()
 		});
-		console.log('newContent', newContent);
+		
 		// add message to channel
 		const message = Message.create(
 			{
@@ -109,6 +88,7 @@
 				reactions: co.list(Reaction).create([], {
 					owner: publicGroup()
 				}),
+				replyTo: replyTo?.id,
 				type: 'message'
 			},
 			{
@@ -116,14 +96,14 @@
 			}
 		);
 
-		channel.current?.mainThread?.timeline?.push(message);
+		replyTo = null;
 
-		// clear message
+		channel.current?.mainThread?.timeline?.push(message);
 	}
 
 	async function clickJoinSpace() {
-		console.log('clickJoinSpace', space.current);
-		let toJoinSpace = space.current;
+		console.log('clickJoinSpace', space?.current);
+		let toJoinSpace = space?.current;
 		if (!toJoinSpace) {
 			toJoinSpace = await Space.load(spaceId);
 		}
@@ -134,18 +114,23 @@
 		}
 
 		joinSpace(toJoinSpace);
-		me.current?.root.joinedSpaces?.unshift(toJoinSpace);
+		me?.current?.root?.joinedSpaces?.unshift(toJoinSpace);
 
 		console.log('joined space', toJoinSpace);
 	}
 
 	let input = $state('');
+	let replyTo = $state<Loaded<typeof Message> | null>(null);
+
+	function setReplyTo(message: Loaded<typeof Message>) {
+		replyTo = message;
+	}
 </script>
 
 <div class="flex w-full flex-col gap-1">
 	{#each channel.current?.mainThread?.timeline ?? [] as message, index}
 		{#if message}
-			<ChatMessage {message} previousMessage={channel.current?.mainThread?.timeline?.[index - 1]} me={me.current} />
+			<ChatMessage setReplyTo={setReplyTo} {message} previousMessage={channel.current?.mainThread?.timeline?.[index - 1]} me={me?.current} />
 		{/if}
 	{/each}
 	{#if channel.current?.mainThread?.timeline?.length === 0}
@@ -155,20 +140,12 @@
 	{/if}
 </div>
 
-<div
-	class="dark:bg-base-900 border-base-200 dark:border-base-800 fixed right-2 bottom-0 left-2 rounded-t-2xl border-x border-t bg-white px-4 shadow-lg lg:left-76"
->
-	{#if me.current?.root.joinedSpaces?.some((space) => space?.id === spaceId)}
-		<Prose class="">
-			<RichTextEditor
-				bind:htmlContent={input}
-				onEnter={handleSubmit}
-				class="max-h-[30dvh] overflow-y-auto"
-			/>
-		</Prose>
-	{:else}
-		<div class="flex items-center justify-center">
-			<Button class="my-2.5" onclick={clickJoinSpace}>Join Space to chat</Button>
-		</div>
-	{/if}
-</div>
+
+<ChatInput
+	bind:replyTo
+	spaceId={spaceId}
+	me={me.current}
+	handleSubmit={handleSubmit}
+	clickJoinSpace={clickJoinSpace}
+	bind:value={input}
+/>

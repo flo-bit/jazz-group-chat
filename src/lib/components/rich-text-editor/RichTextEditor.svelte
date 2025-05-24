@@ -83,7 +83,6 @@
 			// 	}
 			// }),
 			initKeyboardShortcutHandler({ onEnter: onEnter }),
-
 		];
 
 		editor = new Editor({
@@ -199,7 +198,6 @@
 <div
 	bind:this={ref}
 	class={cn('relative flex-1', className)}
-
 	role="region"
 ></div>
 

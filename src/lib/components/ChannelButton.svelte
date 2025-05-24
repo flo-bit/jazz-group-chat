@@ -19,7 +19,6 @@
 
 	let isNew = $derived.by(() => {
 		if (!lastReadDate) return true;
-		console.log('hello');
 		if (!channel.mainThread?.timeline) return false;
 		let date = channel.mainThread.timeline[channel.mainThread.timeline.length - 1]?.createdAt;
 		if (!date) return false;

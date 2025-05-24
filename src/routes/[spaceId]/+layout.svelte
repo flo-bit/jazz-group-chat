@@ -22,6 +22,7 @@
 	import SpaceSelection from '$lib/SpaceSelection.svelte';
 	import ThemeSelectDropdown from '$lib/components/ThemeSelectDropdown.svelte';
 	import ChannelButton from '$lib/components/ChannelButton.svelte';
+	import { setContext } from 'svelte';
 
 	let spaceId: string = $state(page.params.spaceId);
 
@@ -41,6 +42,16 @@
 			profile: true,
 			root: true
 		}
+	});
+
+	setContext('me', me);
+	setContext('space', space);
+	setContext('spaceId', spaceId);
+
+	$effect(() => {
+		setContext('space', space);
+		setContext('spaceId', spaceId);
+		setContext('me', me);
 	});
 
 	afterNavigate(() => {
