@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Loaded } from 'jazz-tools';
+	import { ImageDefinition, type Loaded } from 'jazz-tools';
 	import { Message, MyAppAccount, MyAppProfile, Reaction, Space } from '$lib/schema';
 	import { Avatar, cn, Prose } from '@fuxui/base';
 	import { CoState } from 'jazz-svelte';
@@ -11,6 +11,7 @@
 	import ChatMessageThread from './ChatMessageThread.svelte';
 	import { useCurrentRoute } from '$lib/context';
 	import { view } from '../../routes/[spaceId]/view.svelte';
+	import Image from './Image.svelte';
 
 	let {
 		message,
@@ -125,7 +126,7 @@
 
 <div
 	class={cn(
-		'flex w-full max-w-full flex-col gap-2 py-1 select-text relative',
+		'relative flex w-full max-w-full flex-col gap-2 py-1 select-text',
 		!isSameUser && showDivider
 			? 'border-base-200/70 dark:border-base-900/50 border-t pt-2 pb-2'
 			: '-my-1.5'
@@ -136,7 +137,9 @@
 	{/if}
 
 	{#if view.highlightedMessage === message.id}
-		<div class="absolute top-1 -left-1 -right-1 bottom-2 bg-accent-500/10 dark:bg-accent-500/5 rounded-2xl"></div>
+		<div
+			class="bg-accent-500/10 dark:bg-accent-500/5 absolute top-1 -right-1 bottom-2 -left-1 rounded-2xl"
+		></div>
 	{/if}
 
 	<div
@@ -188,6 +191,13 @@
 		{/if}
 	</div>
 
+	{#if message.images && message.images.length > 0}
+		<div class="flex flex-wrap gap-2 ml-12 mb-4">
+			{#each message.images as image}
+				<Image {image} class="max-w-36 max-h-36 rounded-2xl border border-base-200/70 dark:border-base-900/50 object-contain" />
+			{/each}
+		</div>
+	{/if}
 	{#if showThread && message.thread}
 		<ChatMessageThread
 			threadId={message.thread}

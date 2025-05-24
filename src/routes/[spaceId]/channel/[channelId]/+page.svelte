@@ -45,7 +45,9 @@
 	const me = new AccountCoState(MyAppAccount, {
 		resolve: {
 			profile: true,
-			root: true
+			root: {
+				joinedSpaces: true
+			}
 		}
 	});
 
@@ -106,13 +108,17 @@
 			owner: publicGroup()
 		});
 
+		console.log('submit');
+
+		console.log('postImages', postImages, postImages.length);
+
 		// add message to channel
 		const message = Message.create(
 			{
 				content: newContent,
 				createdAt: new Date(),
 				updatedAt: new Date(),
-				images: co.list(co.image()).create([], {
+				images: co.list(co.image()).create([...postImages], {
 					owner: publicGroup()
 				}),
 				reactions: co.list(Reaction).create([], {
@@ -125,6 +131,8 @@
 				owner: publicGroup()
 			}
 		);
+
+		postImages = [];
 
 		replyTo = null;
 
@@ -150,7 +158,7 @@
 		joinSpace(toJoinSpace);
 		me?.current?.root?.joinedSpaces?.unshift(toJoinSpace);
 
-		console.log('joined space', toJoinSpace);
+		console.log('joined space', toJoinSpace, me?.current?.root?.joinedSpaces);
 	}
 
 	let input = $state('');
@@ -164,6 +172,8 @@
 
 	let threadMessage = $state<Loaded<typeof Message> | null>(null);
 	let threadName = $state('');
+
+	let postImages = $state([]);
 
 	function createThread() {
 		if (!threadMessage) {
@@ -194,7 +204,7 @@
 {#if view.active === 'channel'}
 	<TimelineView
 		timeline={channel.current?.mainThread?.timeline}
-		setReplyTo={setReplyTo}
+		{setReplyTo}
 		me={me?.current}
 		createThread={(message) => {
 			threadMessage = message;
@@ -202,7 +212,14 @@
 		}}
 	/>
 
-	<ChatInput bind:replyTo me={me?.current} {handleSubmit} {clickJoinSpace} bind:value={input} />
+	<ChatInput
+		bind:replyTo
+		me={me?.current}
+		{handleSubmit}
+		{clickJoinSpace}
+		bind:value={input}
+		bind:images={postImages}
+	/>
 {:else}
 	<div class="flex w-full flex-col gap-2">
 		{#each channel.current?.subThreads ?? [] as thread}

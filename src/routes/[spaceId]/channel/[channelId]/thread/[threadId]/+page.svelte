@@ -11,7 +11,6 @@
 
 	const route = useCurrentRoute();
 
-	
 	let space = $derived(
 		new CoState(Space, route.spaceId, {
 			resolve: {
@@ -30,7 +29,6 @@
 		}
 	});
 
-	
 	let thread = $derived(
 		new CoState(Thread, route.threadId, {
 			resolve: {
@@ -91,7 +89,7 @@
 				content: newContent,
 				createdAt: new Date(),
 				updatedAt: new Date(),
-				images: co.list(co.image()).create([], {
+				images: co.list(co.image()).create([...postImages], {
 					owner: publicGroup()
 				}),
 				reactions: co.list(Reaction).create([], {
@@ -104,6 +102,8 @@
 				owner: publicGroup()
 			}
 		);
+
+		postImages = [];
 
 		replyTo = null;
 
@@ -138,15 +138,24 @@
 	function setReplyTo(message: Loaded<typeof Message>) {
 		replyTo = message;
 	}
+
+	let postImages = $state([]);
 </script>
 
 <TimelineView
 	timeline={thread.current?.timeline}
-	setReplyTo={setReplyTo}
+	{setReplyTo}
 	me={me?.current}
 	createThread={() => {}}
 	allowThreadCreation={false}
 	showThread={false}
 />
 
-<ChatInput bind:replyTo me={me?.current} {handleSubmit} {clickJoinSpace} bind:value={input} />
+<ChatInput
+	bind:replyTo
+	me={me?.current}
+	{handleSubmit}
+	{clickJoinSpace}
+	bind:value={input}
+	bind:images={postImages}
+/>

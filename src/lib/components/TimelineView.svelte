@@ -6,6 +6,7 @@
 	import { page } from '$app/state';
 	import { setContext } from 'svelte';
 	import { view } from '../../routes/[spaceId]/view.svelte';
+	import { ScrollArea } from '@fuxui/base';
 
 	let viewport: HTMLDivElement = $state(null!);
 	let virtualizer: Virtualizer<string> | undefined = $state();
@@ -54,12 +55,21 @@
 	});
 </script>
 
-<div
-	class="absolute inset-0 left-0 h-screen overflow-y-scroll px-4 py-24 lg:left-80"
-	bind:this={viewport}
+<ScrollArea
+	class="absolute inset-0 left-0 h-[100dhv] overflow-y-scroll px-4 lg:left-80"
+	bind:ref={viewport}
 >
+	<div class="h-24 w-full"></div>
+
 	{#if timeline && timeline.filter((m) => !m.softDeleted).length > 0}
-		<Virtualizer bind:this={virtualizer} data={timeline} getKey={(k, _) => k} overscan={10}>
+		<Virtualizer
+			bind:this={virtualizer}
+			data={timeline}
+			getKey={(k, _) => k}
+			overscan={10}
+			scrollRef={viewport}
+			startMargin={96}
+		>
 			{#snippet children(message: Loaded<typeof Message>, index: number)}
 				{@const previousMessage = index > 0 ? timeline[index - 1] : undefined}
 				{#if message && !message.softDeleted}
@@ -75,9 +85,13 @@
 				{/if}
 			{/snippet}
 		</Virtualizer>
+
+		<div class="h-32 w-full"></div>
+	{:else if timeline === undefined}
+		<div class="text-base-600 dark:text-base-400 h-30 text-sm">Loading chat...</div>
 	{:else}
 		<div class="text-base-600 dark:text-base-400 h-30 text-sm">
 			No messages yet. Be the first to send a message!
 		</div>
 	{/if}
-</div>
+</ScrollArea>

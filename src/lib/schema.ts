@@ -5,9 +5,13 @@ export const Reaction = co.map({
 	emoji: z.string()
 });
 
+export const ImageList = co.list(co.image());
+
+export const Image = co.image();
+
 export const Message = co.map({
 	content: co.richText(),
-	images: co.list(co.image()),
+	images: ImageList,
 
 	createdAt: z.date(),
 	updatedAt: z.date(),

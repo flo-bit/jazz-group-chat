@@ -7,9 +7,14 @@
 	import Underline from '@tiptap/extension-underline';
 	import Typography from '@tiptap/extension-typography';
 	import { RichTextLink } from './RichTextLink';
-	import { cn } from '@fuxui/base';
+	import { Button, cn } from '@fuxui/base';
 	import { ImageUploadNode } from './image-upload/ImageUploadNode';
 	import { initKeyboardShortcutHandler } from './onEnter';
+	import { ImageList } from '$lib/schema';
+	import type { Loaded } from 'jazz-tools';
+	import { createImage } from 'jazz-browser-media-images';
+	import { publicGroup } from '$lib/utils';
+	import { Portal } from 'bits-ui';
 
 	let {
 		content = $bindable({}),
@@ -19,7 +24,8 @@
 		class: className,
 		onupdate,
 		htmlContent = $bindable(''),
-		onEnter,
+		processImageFile,
+		onEnter
 	}: {
 		content?: Content;
 		placeholder?: string;
@@ -30,6 +36,7 @@
 		ontransaction?: () => void;
 		htmlContent?: string;
 		onEnter: () => void;
+		processImageFile: (file: File) => void;
 	} = $props();
 
 	let hasFocus = true;
@@ -57,12 +64,6 @@
 					return '';
 				}
 			}),
-			// Image.configure({
-			// 	HTMLAttributes: {
-			// 		class: 'max-w-full object-contain relative rounded-2xl'
-			// 	},
-			// 	allowBase64: true
-			// }),
 			Underline.configure({}),
 			RichTextLink.configure({
 				openOnClick: false,
@@ -70,19 +71,7 @@
 				defaultProtocol: 'https'
 			}),
 			Typography.configure(),
-			// ImageUploadNode.configure({
-			// 	upload: async (file, onProgress, abortSignal) => {
-			// 		console.log('uploading image', file);
-			// 		// wait 2 seconds
-			// 		for(let i = 0; i < 10; i++) {
-			// 			await new Promise((resolve) => setTimeout(resolve, 200));
-			// 			onProgress?.({ progress: i / 10 });
-			// 		}
-
-			// 		return 'https://picsum.photos/200/300';
-			// 	}
-			// }),
-			initKeyboardShortcutHandler({ onEnter: onEnter }),
+			initKeyboardShortcutHandler({ onEnter: onEnter })
 		];
 
 		editor = new Editor({
@@ -106,50 +95,9 @@
 			},
 			content: ``
 		});
-
 	});
 
-	// Flag to track whether a file is being dragged over the drop area
 	let isDragOver = $state(false);
-
-	// Store local image files for later upload
-	let localImages: Map<string, File> = $state(new Map());
-
-	// Track which image URLs in the editor are local previews
-	let localImageUrls: Set<string> = $state(new Set());
-
-	// Process image file to create a local preview
-	async function processImageFile(file: File) {
-		if (!editor) {
-			console.warn('Tiptap editor not initialized');
-			return;
-		}
-
-		try {
-			const localUrl = URL.createObjectURL(file);
-
-			localImages.set(localUrl, file);
-			localImageUrls.add(localUrl);
-
-			//editor.commands.setImageUploadNode();
-			editor.chain().focus().setImageUploadNode(
-				{
-					preview: localUrl
-				}
-			).run();
-
-			// wait 2 seconds
-			// await new Promise((resolve) => setTimeout(resolve, 500));
-
-			// content = editor.getJSON();
-
-			// console.log('replacing image url in content');
-			// replaceImageUrlInContent(content, localUrl, 'https://picsum.photos/200/300');
-			// editor.commands.setContent(content);
-		} catch (error) {
-			console.error('Error creating image preview:', error);
-		}
-	}
 
 	const handlePaste = (event: ClipboardEvent) => {
 		const items = event.clipboardData?.items;
@@ -169,11 +117,13 @@
 		event.preventDefault();
 		event.stopPropagation();
 		isDragOver = true;
+		console.log('drag over');
 	}
 	function handleDragLeave(event: DragEvent) {
 		event.preventDefault();
 		event.stopPropagation();
 		isDragOver = false;
+		console.log('drag leave');
 	}
 	function handleDrop(event: DragEvent) {
 		event.preventDefault();
@@ -184,27 +134,60 @@
 		if (file?.type.startsWith('image/')) {
 			processImageFile(file);
 		}
+		console.log('drop');
 	}
 
 	onDestroy(() => {
-		for (const localUrl of localImageUrls) {
-			URL.revokeObjectURL(localUrl);
-		}
-
 		editor?.destroy();
 	});
 </script>
 
-<div
-	bind:this={ref}
-	class={cn('relative flex-1', className)}
-	role="region"
-></div>
+<svelte:window ondragover={handleDragOver} ondragleave={handleDragLeave} ondrop={handleDrop} />
 
-<!-- onpaste={handlePaste}
-ondragover={handleDragOver}
-ondragleave={handleDragLeave}
-ondrop={handleDrop} -->
+{#if isDragOver}
+	<Portal>
+		<div
+			class="bg-base-300/50 dark:bg-base-800/50 backdrop-blur-md text-base-900 dark:text-base-100 pointer-events-none absolute inset-0 flex items-center justify-center rounded-2xl z-[1000]"
+		>
+			Drop image to add it to your message
+		</div>
+	</Portal>
+{/if}
+
+<div class={cn('relative flex items-center', className)}>
+	<Button
+		size="icon"
+		variant="ghost"
+		class="mr-2"
+		onclick={() => {
+			// file upload
+			const input = document.createElement('input');
+			input.type = 'file';
+			input.accept = 'image/*';
+			input.onchange = (event) => {
+				const file = (event.target as HTMLInputElement).files?.[0];
+				if (!file) return;
+				processImageFile(file);
+				input.remove();
+			};
+			input.click();
+		}}
+	>
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			fill="none"
+			viewBox="0 0 24 24"
+			stroke-width="1.5"
+			stroke="currentColor"
+			class="size-6"
+		>
+			<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+		</svg>
+	</Button>
+	<div bind:this={ref} onpaste={handlePaste}></div>
+</div>
+
+<!--  -->
 
 <style>
 	:global(.tiptap) {

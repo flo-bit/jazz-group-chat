@@ -51,6 +51,7 @@
 		"@tiptap/extension-underline": "^2.12.0",
 		"@tiptap/starter-kit": "^2.12.0",
 		"@use-gesture/vanilla": "^10.3.1",
+		"bits-ui": "^1.7.0",
 		"jazz-browser-media-images": "^0.14.8",
 		"jazz-inspector-element": "^0.14.0",
 		"jazz-richtext-tiptap": "^0.1.15",

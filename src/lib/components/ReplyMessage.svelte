@@ -22,7 +22,7 @@
 {#if message.current}
 	<div
 		class={cn(
-			'group bg-base-200/50 pointer-events-none dark:bg-base-900/40 border-base-300/50 dark:border-base-800/30 text-base-700 dark:text-base-300',
+			'group isolate bg-base-200/50 pointer-events-none dark:bg-base-900/40 border-base-300/50 dark:border-base-800/30 text-base-700 dark:text-base-300',
 			'relative inline-flex w-full max-w-full min-w-0 items-center justify-start gap-3 overflow-x-hidden rounded-2xl border px-3 py-0.5 text-xs'
 		)}
 	>
