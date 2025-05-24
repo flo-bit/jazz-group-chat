@@ -58,7 +58,8 @@
 		"jazz-tools": "^0.14.4",
 		"paper": "^0.12.18",
 		"svelte-relative-time": "^0.0.6",
-		"svelte-tiptap": "^2.1.0"
+		"svelte-tiptap": "^2.1.0",
+		"virtua": "^0.41.2"
 	},
 	"license": "MIT"
 }

@@ -18,6 +18,7 @@
 	import { co, CoRichText, type Loaded } from 'jazz-tools';
 	import { view } from '../../view.svelte';
 	import ChatMessageThread from '$lib/components/ChatMessageThread.svelte';
+	import TimelineView from '$lib/components/TimelineView.svelte';
 
 	const route = useCurrentRoute();
 
@@ -182,27 +183,15 @@
 </script>
 
 {#if view.active === 'channel'}
-	<div class="flex w-full flex-col gap-1">
-		{#each channel.current?.mainThread?.timeline ?? [] as message, index}
-			{#if message && !message.softDeleted}
-				<ChatMessage
-					{setReplyTo}
-					{message}
-					previousMessage={channel.current?.mainThread?.timeline?.[index - 1]}
-					me={me?.current}
-					createThread={(message) => {
-						threadMessage = message;
-						createThreadModalOpen = true;
-					}}
-				/>
-			{/if}
-		{/each}
-		{#if channel.current?.mainThread?.timeline?.length === 0}
-			<div class="text-base-600 dark:text-base-400 h-30 text-sm">
-				No messages yet. Be the first to send a message!
-			</div>
-		{/if}
-	</div>
+	<TimelineView
+		timeline={channel.current?.mainThread?.timeline}
+		setReplyTo={setReplyTo}
+		me={me?.current}
+		createThread={(message) => {
+			threadMessage = message;
+			createThreadModalOpen = true;
+		}}
+	/>
 
 	<ChatInput bind:replyTo me={me?.current} {handleSubmit} {clickJoinSpace} bind:value={input} />
 {:else}

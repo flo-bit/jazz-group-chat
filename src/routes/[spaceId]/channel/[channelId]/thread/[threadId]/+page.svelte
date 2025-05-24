@@ -2,6 +2,7 @@
 	import { afterNavigate } from '$app/navigation';
 	import ChatInput from '$lib/components/ChatInput.svelte';
 	import ChatMessage from '$lib/components/ChatMessage.svelte';
+	import TimelineView from '$lib/components/TimelineView.svelte';
 	import { useCurrentRoute } from '$lib/context';
 	import { LastReadList, Message, MyAppAccount, Reaction, Space, Thread } from '$lib/schema';
 	import { joinSpace, publicGroup } from '$lib/utils';
@@ -139,24 +140,13 @@
 	}
 </script>
 
-<div class="flex w-full flex-col gap-1">
-	{#each thread.current?.timeline ?? [] as message, index}
-		{#if message && !message.softDeleted}
-			<ChatMessage
-				{setReplyTo}
-				{message}
-				previousMessage={thread.current?.timeline?.[index - 1]}
-				me={me?.current}
-				allowThreadCreation={false}
-				showThread={false}
-			/>
-		{/if}
-	{/each}
-	{#if thread.current?.timeline?.length === 0}
-		<div class="text-base-600 dark:text-base-400 h-30 text-sm">
-			No messages yet. Be the first to send a message!
-		</div>
-	{/if}
-</div>
+<TimelineView
+	timeline={thread.current?.timeline}
+	setReplyTo={setReplyTo}
+	me={me?.current}
+	createThread={() => {}}
+	allowThreadCreation={false}
+	showThread={false}
+/>
 
 <ChatInput bind:replyTo me={me?.current} {handleSubmit} {clickJoinSpace} bind:value={input} />

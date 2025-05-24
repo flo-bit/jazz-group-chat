@@ -10,6 +10,7 @@
 	import ReplyMessage from './ReplyMessage.svelte';
 	import ChatMessageThread from './ChatMessageThread.svelte';
 	import { useCurrentRoute } from '$lib/context';
+	import { view } from '../../routes/[spaceId]/view.svelte';
 
 	let {
 		message,
@@ -124,7 +125,7 @@
 
 <div
 	class={cn(
-		'flex w-full max-w-full flex-col gap-2 py-1 select-text',
+		'flex w-full max-w-full flex-col gap-2 py-1 select-text relative',
 		!isSameUser && showDivider
 			? 'border-base-200/70 dark:border-base-900/50 border-t pt-2 pb-2'
 			: '-my-1.5'
@@ -133,6 +134,11 @@
 	{#if message.replyTo && showReply}
 		<ReplyMessage replyToId={message.replyTo} />
 	{/if}
+
+	{#if view.highlightedMessage === message.id}
+		<div class="absolute top-1 -left-1 -right-1 bottom-2 bg-accent-500/20 rounded-lg"></div>
+	{/if}
+
 	<div
 		class={cn('group relative flex w-full justify-start gap-3')}
 		onpointerover={() => (hovering = true)}

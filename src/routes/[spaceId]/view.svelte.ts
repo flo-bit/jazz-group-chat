@@ -1,3 +1,4 @@
 export const view = $state({
-	active: 'channel'
+	active: 'channel',
+	highlightedMessage: null as string | null
 });
