@@ -136,7 +136,7 @@
 	{/if}
 
 	{#if view.highlightedMessage === message.id}
-		<div class="absolute top-1 -left-1 -right-1 bottom-2 bg-accent-500/20 rounded-lg"></div>
+		<div class="absolute top-1 -left-1 -right-1 bottom-2 bg-accent-500/10 dark:bg-accent-500/5 rounded-2xl"></div>
 	{/if}
 
 	<div

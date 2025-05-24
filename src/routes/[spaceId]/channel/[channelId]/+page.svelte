@@ -19,6 +19,7 @@
 	import { view } from '../../view.svelte';
 	import ChatMessageThread from '$lib/components/ChatMessageThread.svelte';
 	import TimelineView from '$lib/components/TimelineView.svelte';
+	import { onMount } from 'svelte';
 
 	const route = useCurrentRoute();
 
@@ -32,6 +33,14 @@
 			}
 		})
 	);
+
+	// onMount(() => {
+	// 	setInterval(() => {
+	// 		// post a new random message
+	// 		input = '<p>' + Math.random().toString(36).substring(2, 15) + '</p>';
+	// 		handleSubmit();
+	// 	}, 1000);
+	// });
 
 	const me = new AccountCoState(MyAppAccount, {
 		resolve: {

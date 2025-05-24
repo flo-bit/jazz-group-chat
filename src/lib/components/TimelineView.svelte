@@ -43,9 +43,7 @@
 		setTimeout(() => {
 			if (!virtualizer) return;
 
-			virtualizer.scrollToIndex((messageCount ?? 0) - 1, {
-				smooth: true
-			});
+			virtualizer.scrollToIndex((messageCount ?? 0) - 1);
 		});
 	});
 
