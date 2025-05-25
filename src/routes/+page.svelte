@@ -63,18 +63,6 @@
 		me.current.profile.name = profile.handle;
 
 		if (profile.avatar) {
-			// download avatar from profile.avatar
-			// let avatar = await fetch(profile.avatar);
-			// let blob = await avatar.blob();
-			// let file = new File([blob], 'avatar.png', { type: 'image/png' });
-			// const image = await createImage(file, {
-			// 	owner: me,
-			// 	maxSize: 256
-			// });
-
-			// if (image) {
-			// 	me.current.profile.image = image;
-			// }
 			me.current.profile.imageUrl = profile.avatar;
 		}
 	}
