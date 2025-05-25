@@ -20,7 +20,8 @@ const config = {
 
 			directives: {
 				'script-src': ['self'],
-				'style-src': ['self']
+				'style-src': ['self'],
+				'worker-src': ['self', 'blob:']
 			}
 		},
 
