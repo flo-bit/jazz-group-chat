@@ -5,6 +5,7 @@
 	import { Button } from '@fuxui/base';
 	import type { Loaded } from 'jazz-tools';
 	import { useCurrentRoute } from '$lib/context';
+	import { afterNavigate } from '$app/navigation';
 
 	const route = useCurrentRoute();
 
@@ -26,12 +27,16 @@
 
 		return new Date(lastReadDate) < date;
 	});
+
+	afterNavigate(() => {
+		console.log(page.url.hash);
+	});
 </script>
 
 <Button
-	data-current={page.url.pathname === `${base}/${route.spaceId}/channel/${channel.id}`}
+	data-current={page.url.hash === `#/${route.spaceId}/channel/${channel.id}`}
 	variant="ghost"
-	href="{base}/{route.spaceId}/channel/{channel.id}"
+	href="#/{route.spaceId}/channel/{channel.id}"
 	class="relative w-full justify-start backdrop-blur-none"
 	{onclick}
 >

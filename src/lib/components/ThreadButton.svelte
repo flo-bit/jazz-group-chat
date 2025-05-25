@@ -45,10 +45,10 @@
 {#if isNew || (!onlyShowIfRecent || isRecent)}
 	<div class="w-full pl-4">
 		<Button
-			data-current={page.url.pathname ===
-				`${base}/${route.spaceId}/channel/${channelId ?? route.channelId}/thread/${threadId}`}
+			data-current={page.url.hash ===
+				`#/${route.spaceId}/channel/${channelId ?? route.channelId}/thread/${threadId}`}
 			variant="ghost"
-			href="{base}/{route.spaceId}/channel/{channelId ?? route.channelId}/thread/{threadId}"
+			href="#/{route.spaceId}/channel/{channelId ?? route.channelId}/thread/{threadId}"
 			class="relative w-full justify-start backdrop-blur-none"
 			{onclick}
 		>

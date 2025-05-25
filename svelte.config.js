@@ -14,8 +14,21 @@ const config = {
 		adapter: adapter({
 			fallback: 'index.html'
 		}),
-		paths: {
-			base: '/jazz-group-chat'
+
+		csp: {
+			mode: 'hash',
+
+			directives: {
+				'script-src': ['self'],
+				'style-src': ['self']
+			}
+		},
+
+		output: {
+			bundleStrategy: 'inline'
+		},
+		router: {
+			type: 'hash'
 		}
 	}
 };

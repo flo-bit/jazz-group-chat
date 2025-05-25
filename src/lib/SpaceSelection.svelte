@@ -83,7 +83,7 @@
 		  "
 				>
 					<a
-						href={`${base}/${space.id}`}
+						href={`#/${space.id}`}
 						class="text-base-900 dark:text-base-100 flex h-full w-full flex-col justify-center font-bold"
 						onclick={() => (open = false)}
 					>

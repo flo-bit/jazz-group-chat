@@ -184,7 +184,7 @@
 			<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
 		</svg>
 	</Button>
-	<div bind:this={ref} onpaste={handlePaste}></div>
+	<div bind:this={ref} onpaste={handlePaste} class="w-full"></div>
 </div>
 
 <!--  -->

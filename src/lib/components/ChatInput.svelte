@@ -127,7 +127,7 @@
 			<RichTextEditor
 				bind:htmlContent={value}
 				onEnter={handleSubmit}
-				class="max-h-[30dvh] overflow-y-auto"
+				class="max-h-[30dvh] overflow-y-auto w-full"
 				{processImageFile}
 			/>
 		</Prose>

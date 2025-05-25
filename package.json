@@ -60,7 +60,9 @@
 		"paper": "^0.12.18",
 		"svelte-relative-time": "^0.0.6",
 		"svelte-tiptap": "^2.1.0",
-		"virtua": "^0.41.2"
+		"virtua": "^0.41.2",
+		"vite-plugin-top-level-await": "^1.5.0",
+		"vite-plugin-wasm": "^3.4.1"
 	},
 	"license": "MIT"
 }
