@@ -44,8 +44,8 @@
 		if (!me.current) return;
 		isProcessingImage = true;
 		const image = await createImage(file, {
-			owner: publicGroup('reader'),
-			maxSize: 1024
+			owner: publicGroup(),
+			maxSize: 256
 		});
 
 		me.current.profile.image = image;
@@ -97,7 +97,7 @@
 			>
 				{#if isProcessingImage}
 					<div class="bg-accent-500/20 size-24 animate-pulse rounded-full"></div>
-				{:else}
+				{:else if open}
 					{#key me.current?.profile.imageUrl || me.current?.profile.image}
 						<Avatar
 							image={me.current?.profile?.image}

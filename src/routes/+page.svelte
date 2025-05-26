@@ -1,16 +1,12 @@
 <script lang="ts">
-	import { Button, cn, Heading, Input, Modal, Subheading, ThemeToggle } from '@fuxui/base';
+	import { Button, cn, Heading, Subheading, ThemeToggle } from '@fuxui/base';
 	import { AccountCoState, CoState } from 'jazz-svelte';
 	import { LastReadList, MyAppAccount, SpaceList } from '$lib/schema';
 	import { createSpace } from '$lib/utils';
-	import { getProfile, resolveHandle } from '$lib/bluesky';
-	import { ImageDefinition } from 'jazz-tools';
-	import { onDestroy } from 'svelte';
 	import SpaceItem from '$lib/components/SpaceItem.svelte';
 	import CreateSpaceModal from '$lib/components/CreateSpaceModal.svelte';
 	import SpaceSelection from '$lib/SpaceSelection.svelte';
 	import EditProfileModal from '$lib/components/EditProfileModal.svelte';
-	import Avatar from '$lib/components/Avatar.svelte';
 
 	const me = new AccountCoState(MyAppAccount, {
 		resolve: {
@@ -54,24 +50,10 @@
 
 	let editProfileModalOpen = $state(false);
 
-	let imageUrl = $derived.by(() => {
-		if (!me.current?.profile?.image) return;
-		const highestRes = ImageDefinition.highestResAvailable(me?.current?.profile?.image);
-		if (!highestRes) return;
-		const blob = highestRes.stream.toBlob();
-		if (!blob) return;
-		return URL.createObjectURL(blob);
-	});
-
 	$effect(() => {
 		if (me.current?.root && !me.current.root.lastRead === null) {
 			me.current.root.lastRead = LastReadList.create({});
 			console.log('created last read list');
-		}
-	});
-	onDestroy(() => {
-		if (imageUrl) {
-			URL.revokeObjectURL(imageUrl);
 		}
 	});
 
