@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { Message, MyAppProfile } from '$lib/schema';
-	import { Avatar, cn, Prose } from '@fuxui/base';
+	import { cn, Prose } from '@fuxui/base';
 	import { CoState } from 'jazz-svelte';
 	import { getContext } from 'svelte';
 	import { view } from '../../routes/[spaceId]/view.svelte';
+	import Avatar from './Avatar.svelte';
 
 	let {
 		replyToId
@@ -42,7 +43,7 @@
 		</svg>
 
 		{#if profile?.current?.imageUrl}
-			<Avatar class="size-4 z-10" src={profile?.current?.imageUrl} />
+			<Avatar class="size-4 z-10" src={profile?.current?.imageUrl} image={profile?.current?.image} />
 		{/if}
 
 		<span

@@ -5,9 +5,10 @@
 
 	let {
 		image,
+		src,
 		class: className,
 		...rest
-	}: { image?: Loaded<typeof Image>; class?: string } = $props();
+	}: { image?: Loaded<typeof Image>; src?: string; class?: string } = $props();
 
 	onMount(() => {});
 
@@ -15,8 +16,13 @@
 
 	$effect(() => {
 		if (loaded) return;
-		if (!image) return;
 		if (!imageRef) return;
+		if (src && !image) {
+			imageRef.src = src;
+			loaded = true;
+			return;
+		}
+		if (!image) return;
 
 		loaded = true;
 		const highestRes = ImageDefinition.highestResAvailable(image);

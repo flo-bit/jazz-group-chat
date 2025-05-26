@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { ImageDefinition, type Loaded } from 'jazz-tools';
 	import { Message, MyAppAccount, MyAppProfile, Reaction, Space } from '$lib/schema';
-	import { Avatar, cn, Prose } from '@fuxui/base';
+	import { cn, Prose } from '@fuxui/base';
 	import { CoState } from 'jazz-svelte';
 	import RelativeTime from 'svelte-relative-time';
 	import { isSpaceAdmin, publicGroup } from '$lib/utils';
@@ -12,6 +12,7 @@
 	import { useCurrentRoute } from '$lib/context';
 	import { view } from '../../routes/[spaceId]/view.svelte';
 	import Image from './Image.svelte';
+	import Avatar from './Avatar.svelte';
 
 	let {
 		message,
@@ -148,7 +149,7 @@
 		onpointerleave={() => (hovering = false)}
 	>
 		{#if !isSameUser}
-			<Avatar class="size-8 sm:size-10" src={profile?.current?.imageUrl} />
+			<Avatar class="size-8 sm:size-10" src={profile?.current?.imageUrl} image={profile?.current?.image} />
 		{:else}
 			<div class="size-8 shrink-0 sm:size-10"></div>
 		{/if}

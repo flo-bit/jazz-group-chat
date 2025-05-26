@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Avatar, Button, cn, Heading, Input, Modal, Subheading, ThemeToggle } from '@fuxui/base';
+	import { Button, cn, Heading, Input, Modal, Subheading, ThemeToggle } from '@fuxui/base';
 	import { AccountCoState, CoState } from 'jazz-svelte';
 	import { LastReadList, MyAppAccount, SpaceList } from '$lib/schema';
 	import { createSpace } from '$lib/utils';
@@ -9,6 +9,8 @@
 	import SpaceItem from '$lib/components/SpaceItem.svelte';
 	import CreateSpaceModal from '$lib/components/CreateSpaceModal.svelte';
 	import SpaceSelection from '$lib/SpaceSelection.svelte';
+	import EditProfileModal from '$lib/components/EditProfileModal.svelte';
+	import Avatar from '$lib/components/Avatar.svelte';
 
 	const me = new AccountCoState(MyAppAccount, {
 		resolve: {
@@ -51,21 +53,6 @@
 	);
 
 	let editProfileModalOpen = $state(false);
-	let handle = $state('');
-
-	async function editProfile() {
-		editProfileModalOpen = false;
-
-		let did = await resolveHandle({ handle });
-		let profile = await getProfile({ did });
-
-		if (!me.current?.profile) return;
-		me.current.profile.name = profile.handle;
-
-		if (profile.avatar) {
-			me.current.profile.imageUrl = profile.avatar;
-		}
-	}
 
 	let imageUrl = $derived.by(() => {
 		if (!me.current?.profile?.image) return;
@@ -97,10 +84,9 @@
 	>
 		<div class="flex w-full flex-col items-end justify-center gap-2">
 			<div class="mx-auto flex items-center gap-2">
-				<Avatar src={me.current?.profile.imageUrl} />
 				<Heading>
 					Hello,
-					<span class="font-bold">{me.current?.profile.name} </span>
+					<span class="font-bold">{me.current?.profile.name}</span>
 				</Heading>
 			</div>
 		</div>
@@ -195,13 +181,7 @@
 	</div>
 </div>
 
-<Modal bind:open={editProfileModalOpen}>
-	<form onsubmit={editProfile} class="flex flex-col gap-4">
-		<Subheading>Set user info from bluesky handle</Subheading>
-		<Input bind:value={handle} />
-		<Button type="submit">set</Button>
-	</form>
-</Modal>
+<EditProfileModal bind:open={editProfileModalOpen} />
 
 <CreateSpaceModal bind:open={createNewSpaceModalOpen} {createNewSpace} />
 
