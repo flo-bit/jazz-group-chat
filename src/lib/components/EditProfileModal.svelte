@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { MyAppAccount } from '$lib/schema';
-	import { Button, Input, Modal, Paragraph, Subheading } from '@fuxui/base';
+	import { Button, Input, Modal, Paragraph, Subheading, toast } from '@fuxui/base';
 	import { AccountCoState } from 'jazz-svelte';
 	import Avatar from './Avatar.svelte';
 	import { createImage } from 'jazz-browser-media-images';
@@ -57,15 +57,19 @@
 	async function editProfile() {
 		loadingBlueskyInfo = true;
 
-		let did = await resolveHandle({ handle });
-		let profile = await getProfile({ did });
+		try {
+			let did = await resolveHandle({ handle });
+			let profile = await getProfile({ did });
 
-		if (!me.current?.profile) return;
-		me.current.profile.name = profile.handle;
+			if (!me.current?.profile) return;
+			me.current.profile.name = profile.handle;
 
-		if (profile.avatar) {
-			me.current.profile.imageUrl = profile.avatar;
-			me.current.profile.image = undefined;
+			if (profile.avatar) {
+				me.current.profile.imageUrl = profile.avatar;
+				me.current.profile.image = undefined;
+			}
+		} catch (err) {
+			toast.error('There was an error getting your bluesky info');
 		}
 		loadingBlueskyInfo = false;
 	}
@@ -121,7 +125,7 @@
 			}}
 		/>
 
-		<div class="text-base-800 dark:text-base-200 my-4 text-sm">Or set from bluesky handle:</div>
+		<div class="text-base-700 dark:text-base-300 mt-8 text-sm">Or set from bluesky handle:</div>
 
 		<form
 			class="flex gap-2"
@@ -131,7 +135,7 @@
 		>
 			<Input bind:value={handle} class="grow" />
 			<Button variant="secondary" type="submit" disabled={loadingBlueskyInfo}>
-				{loadingBlueskyInfo ? 'Loading...' : 'Save'}
+				{loadingBlueskyInfo ? 'Loading...' : 'Load from bluesky'}
 			</Button>
 		</form>
 	</div>
