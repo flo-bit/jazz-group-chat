@@ -108,7 +108,7 @@
 							view.active = 'channel';
 							if (route.threadId) {
 								// go to channel
-								goto(`#/${route.spaceId}/channel/${route.channelId}`);
+								goto(`/${route.spaceId}/channel/${route.channelId}`);
 							}
 						}
 					},
@@ -117,7 +117,7 @@
 						onclick: () => {
 							view.active = 'threads';
 							goToThreads = true;
-							goto(`#/${route.spaceId}/channel/${route.channelId}`);
+							goto(`/${route.spaceId}/channel/${route.channelId}`);
 						}
 					}
 				]}
@@ -136,7 +136,7 @@
 	<Button
 		variant="ghost"
 		class="mb-4 w-full justify-start backdrop-blur-none"
-		href={`#/`}
+		href={`/`}
 		onclick={hideSidebar}
 	>
 		<svg
@@ -159,7 +159,7 @@
 	<Button
 		variant="ghost"
 		class="mb-2 w-full justify-start backdrop-blur-none"
-		href={`#/${route.spaceId}`}
+		href={`/${route.spaceId}`}
 		onclick={hideSidebar}
 	>
 		<span>{space.current?.emoji}</span>{space.current?.name}

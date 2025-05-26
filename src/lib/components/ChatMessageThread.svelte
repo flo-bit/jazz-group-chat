@@ -53,7 +53,7 @@
 		>
 		Thread
 		<a
-			href={`#/${route.spaceId}/channel/${route.channelId}/thread/${threadId}`}
+			href={`/${route.spaceId}/channel/${route.channelId}/thread/${threadId}`}
 			class="text-accent-600 dark:text-accent-400 font-medium"
 		>
 			<span class="absolute inset-0"></span>
