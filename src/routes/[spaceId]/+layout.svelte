@@ -79,7 +79,7 @@
 </script>
 
 <Navbar hasSidebar class="dark:bg-base-900 bg-white">
-	<div class="flex items-center gap-2">
+	<div class="flex items-center gap-1">
 		<Button
 			variant="link"
 			class="block font-normal backdrop-blur-none lg:hidden"
@@ -126,7 +126,7 @@
 		{/if}
 	</div>
 
-	<div class="flex items-center gap-2">
+	<div class="flex items-center gap-1">
 		<ThemeSelectDropdown />
 		<ThemeToggle />
 	</div>
@@ -138,6 +138,7 @@
 		class="mb-4 w-full justify-start backdrop-blur-none"
 		href={`/`}
 		onclick={hideSidebar}
+		onmousedown={() => goto('/')}
 	>
 		<svg
 			xmlns="http://www.w3.org/2000/svg"
@@ -161,6 +162,7 @@
 		class="mb-2 w-full justify-start backdrop-blur-none"
 		href={`/${route.spaceId}`}
 		onclick={hideSidebar}
+		onmousedown={() => goto(`/${route.spaceId}`)}
 	>
 		<span>{space.current?.emoji}</span>{space.current?.name}
 	</Button>

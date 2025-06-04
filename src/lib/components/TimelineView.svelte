@@ -19,7 +19,7 @@
 		allowThreadCreation = true,
 		showThread = true
 	}: {
-		timeline: Loaded<typeof Message>[];
+		timeline: string[];
 		setReplyTo: (message: Loaded<typeof Message>) => void;
 		me: Loaded<typeof MyAppAccount>;
 		createThread: (message: Loaded<typeof Message>) => void;
@@ -28,7 +28,7 @@
 	} = $props();
 
 	setContext('scrollTo', (id: string) => {
-		let index = timeline.findIndex((m) => m.id === id);
+		let index = timeline.findIndex((m) => m === id);
 		if (index !== -1) {
 			virtualizer?.scrollToIndex(index, { smooth: true });
 		}
@@ -61,22 +61,22 @@
 >
 	<div class="h-24 w-full"></div>
 
-	{#if timeline && timeline.filter((m) => !m.softDeleted).length > 0}
+	{#if timeline && timeline.length > 0}
 		<Virtualizer
 			bind:this={virtualizer}
 			data={timeline}
 			getKey={(k, _) => k}
-			overscan={10}
+			overscan={100}
 			scrollRef={viewport}
 			startMargin={96}
 		>
-			{#snippet children(message: Loaded<typeof Message>, index: number)}
+			{#snippet children(messageId: string, index: number)}
 				{@const previousMessage = index > 0 ? timeline[index - 1] : undefined}
-				{#if message && !message.softDeleted}
+				{#if messageId}
 					<ChatMessage
 						{setReplyTo}
-						{message}
-						{previousMessage}
+						messageId={messageId}
+						previousMessageId={previousMessage}
 						{me}
 						{createThread}
 						{allowThreadCreation}

@@ -1,5 +1,5 @@
-import { Account, co, Group, type Loaded } from 'jazz-tools';
-import { Channel, Space, SpaceList, Thread, Timeline } from './schema';
+import { Account, co, CoRichText, Group, type Loaded } from 'jazz-tools';
+import { Channel, Message, Reaction, Space, SpaceList, Thread, Timeline } from './schema';
 
 export function publicGroup(readWrite: 'reader' | 'writer' = 'writer') {
 	const group = Group.create();
@@ -54,7 +54,8 @@ export function createSpace(name: string, description?: string, emoji?: string) 
 			emoji,
 			members: co.list(co.account()).create([Account.getMe()], {
 				owner: group
-			})
+			}),
+			version: 1
 		},
 		{
 			owner: group
@@ -83,4 +84,27 @@ export function createPublicSpacesList() {
 	});
 
 	return spaces;
+}
+
+export function createMessage(content: CoRichText, images: never[], replyTo?: string) {
+	const message = Message.create(
+		{
+			content,
+			createdAt: new Date(),
+			updatedAt: new Date(),
+			images: co.list(co.image()).create([...images], {
+				owner: publicGroup()
+			}),
+			reactions: co.list(Reaction).create([], {
+				owner: publicGroup()
+			}),
+			replyTo: replyTo,
+			type: 'message'
+		},
+		{
+			owner: publicGroup()
+		}
+	);
+
+	return message;
 }

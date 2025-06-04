@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { base } from '$app/paths';
-	import { Thread } from '$lib/schema';
+	import { Message, Thread } from '$lib/schema';
 	import { CoState } from 'jazz-svelte';
 	import { useCurrentRoute } from '$lib/context';
 	import { cn } from '@fuxui/base';
@@ -16,12 +16,21 @@
 	const route = useCurrentRoute();
 
 	// get the last message in the thread
-	let lastMessage = $derived(thread.current?.timeline?.at(-1));
+	// let lastMessage = $derived(thread.current?.timeline?.at(-1));
+	let lastMessage = $derived(
+		new CoState(Message, thread.current?.timeline?.at(-1), {
+			resolve: {
+				content: true,
+				images: true,
+				reactions: true
+			}
+		})
+	);
 
 	let isNew = $derived.by(() => {
 		if (!lastReadDate) return thread.current?.timeline?.length !== 0;
 		if (!lastMessage) return false;
-		let date = lastMessage.createdAt;
+		let date = lastMessage.current?.createdAt;
 		if (!date) return false;
 
 		return new Date(lastReadDate) < date;
@@ -61,9 +70,9 @@
 		>
 		<!-- ({thread.current?.timeline?.filter((m) => !m?.softDeleted).length} messages) -->
 
-		{#if lastMessage}
+		{#if lastMessage && lastMessage.current}
 			<span class="text-base-600 dark:text-base-400 text-xs">
-				updated <RelativeTime date={lastMessage.createdAt} locale="en" />
+				updated <RelativeTime date={lastMessage.current.createdAt} locale="en" />
 			</span>
 		{/if}
 	</div>

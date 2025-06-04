@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { base } from '$app/paths';
 	import { page } from '$app/state';
-	import { Thread } from '$lib/schema';
+	import { Message, Thread } from '$lib/schema';
 	import { Button } from '@fuxui/base';
 	import { useCurrentRoute } from '$lib/context';
 	import { CoState } from 'jazz-svelte';
@@ -23,11 +23,20 @@
 	} = $props();
 
 	let thread = $derived(new CoState(Thread, threadId));
+	let lastMessage = $derived(
+		new CoState(Message, thread.current?.timeline?.at(-1), {
+			resolve: {
+				content: true,
+				images: true,
+				reactions: true
+			}
+		})
+	);
 
 	let isNew = $derived.by(() => {
 		if (!lastReadDate) return thread.current?.timeline?.length !== 0;
 		if (!thread.current?.timeline) return false;
-		let date = thread.current.timeline[thread.current.timeline.length - 1]?.createdAt;
+		let date = lastMessage?.current?.createdAt;
 		if (!date) return false;
 
 		return new Date(lastReadDate) < date;
@@ -36,7 +45,7 @@
 	// is latest message less tha 24 hours old
 	let isRecent = $derived.by(() => {
 		if (!thread.current?.timeline) return false;
-		let date = thread.current.timeline[thread.current.timeline.length - 1]?.createdAt;
+		let date = lastMessage?.current?.createdAt;
 		if (!date) return false;
 		return date.getTime() > Date.now() - 1000 * 60 * 60 * 24;
 	});

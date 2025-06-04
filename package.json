@@ -58,6 +58,7 @@
 		"jazz-svelte": "^0.14.4",
 		"jazz-tools": "^0.14.4",
 		"paper": "^0.12.18",
+		"runed": "^0.28.0",
 		"svelte-relative-time": "^0.0.6",
 		"svelte-tiptap": "^2.1.0",
 		"virtua": "^0.41.2",

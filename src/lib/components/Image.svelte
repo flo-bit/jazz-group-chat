@@ -2,6 +2,7 @@
 	import { ImageDefinition, type Loaded } from 'jazz-tools';
 	import { type Image } from '$lib/schema';
 	import { onMount } from 'svelte';
+	import { cn } from '@fuxui/base';
 
 	let {
 		image,
@@ -14,31 +15,53 @@
 
 	let loaded = $state(false);
 
+	let unsub: (() => void) | undefined = $state(undefined);
+
 	$effect(() => {
 		if (loaded) return;
 		if (!imageRef) return;
+
 		if (src && !image) {
 			imageRef.src = src;
 			loaded = true;
 			return;
 		}
+
 		if (!image) return;
 
+		if (!image.subscribe) {
+			if (image.placeholderDataURL) {
+				imageRef.src = image.placeholderDataURL;
+			}
+			return;
+		}
+
+		unsub = image.subscribe({}, (update) => {
+			if (!imageRef) return;
+
+			const highestRes = ImageDefinition.highestResAvailable(update);
+			if (!highestRes) {
+				imageRef.src = image.placeholderDataURL ?? '';
+				return;
+			}
+
+			const blob = highestRes.stream.toBlob();
+			if (!blob) return;
+			const blobURI = URL.createObjectURL(blob);
+
+			imageRef.src = blobURI;
+			//imageRef.onload = () => URL.revokeObjectURL(blobURI);
+		});
+
 		loaded = true;
-		const highestRes = ImageDefinition.highestResAvailable(image);
-
-		if (!highestRes) return;
-		
-		const blob = highestRes.stream.toBlob();
-
-		if (!blob) return;
-
-		const url = URL.createObjectURL(blob);
-		imageRef.src = url;
-		imageRef.onload = () => URL.revokeObjectURL(url);
 	});
 
 	let imageRef = $state<HTMLImageElement | null>(null);
 </script>
 
-<img class={className} bind:this={imageRef} {...rest} />
+<div
+	class={cn('relative', className)}
+	style="aspect-ratio: {image?.originalSize[0] ?? 1} / {image?.originalSize[1] ?? 1}"
+>
+	<img bind:this={imageRef} {...rest} class="absolute inset-0 object-cover w-full h-full" />
+</div>

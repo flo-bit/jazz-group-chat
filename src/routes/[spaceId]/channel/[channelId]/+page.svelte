@@ -10,12 +10,13 @@
 		MyAppAccount,
 		Reaction,
 		Space,
-		Thread
+		Thread,
+		Timeline
 	} from '$lib/schema';
-	import { joinSpace, publicGroup } from '$lib/utils';
+	import { createMessage, joinSpace, publicGroup } from '$lib/utils';
 	import { Button, Heading, Input, Modal } from '@fuxui/base';
 	import { AccountCoState, CoState } from 'jazz-svelte';
-	import { co, CoRichText, type Loaded } from 'jazz-tools';
+	import { co, CoRichText, z, type Loaded } from 'jazz-tools';
 	import { view } from '../../view.svelte';
 	import ChatMessageThread from '$lib/components/ChatMessageThread.svelte';
 	import TimelineView from '$lib/components/TimelineView.svelte';
@@ -23,16 +24,7 @@
 
 	const route = useCurrentRoute();
 
-	let space = $derived(
-		new CoState(Space, route.spaceId, {
-			resolve: {
-				channels: {
-					$each: true,
-					$onError: null
-				}
-			}
-		})
-	);
+	let space = $derived(new CoState(Space, route.spaceId));
 
 	// onMount(() => {
 	// 	setInterval(() => {
@@ -55,13 +47,7 @@
 		new CoState(Channel, route.channelId, {
 			resolve: {
 				mainThread: {
-					timeline: {
-						$each: {
-							reactions: {
-								$each: true
-							}
-						}
-					}
+					timeline: true
 				},
 				subThreads: true
 			}
@@ -108,35 +94,13 @@
 			owner: publicGroup()
 		});
 
-		console.log('submit');
-
-		console.log('postImages', postImages, postImages.length);
-
-		// add message to channel
-		const message = Message.create(
-			{
-				content: newContent,
-				createdAt: new Date(),
-				updatedAt: new Date(),
-				images: co.list(co.image()).create([...postImages], {
-					owner: publicGroup()
-				}),
-				reactions: co.list(Reaction).create([], {
-					owner: publicGroup()
-				}),
-				replyTo: replyTo?.id,
-				type: 'message'
-			},
-			{
-				owner: publicGroup()
-			}
-		);
+		const message = createMessage(newContent, postImages, replyTo?.id);
 
 		postImages = [];
 
 		replyTo = null;
 
-		channel.current?.mainThread?.timeline?.push(message);
+		channel.current?.mainThread?.timeline?.push(message.id);
 	}
 
 	async function clickJoinSpace() {
@@ -183,8 +147,8 @@
 
 		const thread = Thread.create(
 			{
-				name: threadName || 'Unnamed Thread',
-				timeline: co.list(Message).create([threadMessage], {
+				name: threadName || 'New Thread',
+				timeline: Timeline.create([threadMessage.id], {
 					owner: publicGroup()
 				})
 			},
@@ -199,13 +163,24 @@
 
 		createThreadModalOpen = false;
 	}
+
+	// onMount(() => {
+	// 	// send a random message every second
+	// 	setInterval(() => {
+	// 		input = '<p>' + Math.random().toString(36).substring(2, 15) + '</p>';
+	// 		handleSubmit();
+
+	// 		// log number of messages
+	// 		console.log('number of messages', channel.current?.mainThread?.timeline?.length);
+	// 	}, 200);
+	// });
 </script>
 
 {#if view.active === 'channel'}
 	<TimelineView
 		timeline={channel.current?.mainThread?.timeline}
 		{setReplyTo}
-		me={me?.current}
+		me={me?.current ?? null}
 		createThread={(message) => {
 			threadMessage = message;
 			createThreadModalOpen = true;
@@ -246,7 +221,7 @@
 			<div class="bg-base-200/50 dark:bg-base-800/50 rounded-2xl p-2">
 				<ChatMessage
 					{setReplyTo}
-					message={threadMessage}
+					messageId={threadMessage.id}
 					me={me?.current}
 					showMenu={false}
 					showReactions={false}

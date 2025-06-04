@@ -15,8 +15,8 @@
 	import Avatar from './Avatar.svelte';
 
 	let {
-		message,
-		previousMessage,
+		messageId,
+		previousMessageId,
 		me,
 		setReplyTo,
 		createThread,
@@ -27,8 +27,8 @@
 		showThread = true,
 		allowThreadCreation = true
 	}: {
-		message: Loaded<typeof Message>;
-		previousMessage?: Loaded<typeof Message>;
+		messageId: string;
+		previousMessageId?: string;
 		me: Loaded<typeof MyAppAccount>;
 		setReplyTo: (message: Loaded<typeof Message>) => void;
 		createThread: (message: Loaded<typeof Message>) => void;
@@ -40,17 +40,39 @@
 		allowThreadCreation?: boolean;
 	} = $props();
 
-	let profile = $derived(new CoState(MyAppProfile, message._edits.content?.by?.profile?.id));
+	let message = $derived(
+		new CoState(Message, messageId, {
+			resolve: {
+				content: true,
+				images: true,
+				reactions: true
+			}
+		})
+	);
+	let previousMessage = $derived(new CoState(Message, previousMessageId));
+
+	let profile = $derived(
+		new CoState(MyAppProfile, message.current?._edits.content?.by?.profile?.id, {
+			resolve: {
+				image: true
+			}
+		})
+	);
 
 	// if the same user and the message was created in the last minute, don't show the border, username or avatar
 	let isSameUser = $derived.by(() => {
 		if (!previousMessage) return false;
-		if (previousMessage.softDeleted) return false;
-		if (previousMessage._edits.content?.by?.profile?.id !== message._edits.content?.by?.profile?.id)
+		if (previousMessage.current?.softDeleted) return false;
+		if (
+			previousMessage.current?._edits.content?.by?.profile?.id !==
+			message.current?._edits.content?.by?.profile?.id
+		)
 			return false;
-		if (message.replyTo) return false;
+		if (message.current?.replyTo) return false;
 		return (
-			(message.createdAt?.getTime() ?? 0) - (previousMessage?.createdAt?.getTime() ?? 0) < 1000 * 60
+			(message.current?.createdAt?.getTime() ?? 0) -
+				(previousMessage?.current?.createdAt?.getTime() ?? 0) <
+			1000 * 60
 		);
 	});
 
@@ -62,13 +84,13 @@
 		if (!space.current) return false;
 		if (isSpaceAdmin(space.current)) return true;
 		// if is the same user
-		return message._edits.content?.by?.profile?.id === me.profile?.id;
+		return message.current?._edits.content?.by?.profile?.id === me.profile?.id;
 	});
 
 	let pickerOpen = $state(false);
 	let hovering = $state(false);
 
-	function convertReactionsToEmojis(reactions: Loaded<typeof Reaction>[]) {
+	function convertReactionsToEmojis(reactions: Loaded<typeof Reaction>[] | null | undefined) {
 		if (!reactions) return [];
 
 		// convert to [emoji, count, user (if current user has reacted with that emoji)]
@@ -97,16 +119,16 @@
 	}
 
 	function removeReaction(emoji: string) {
-		let index = message.reactions?.findIndex(
+		let index = message.current?.reactions?.findIndex(
 			(reaction) =>
 				reaction?.emoji === emoji && reaction?._edits.emoji?.by?.profile?.id === me.profile?.id
 		);
 		if (index === undefined || index < 0) return;
-		message.reactions?.splice(index, 1);
+		message.current?.reactions?.splice(index, 1);
 	}
 
 	function addReaction(emoji: string) {
-		message.reactions?.push(
+		message.current?.reactions?.push(
 			Reaction.create(
 				{
 					emoji: emoji
@@ -119,25 +141,26 @@
 	}
 
 	function softDelete() {
-		message.softDeleted = true;
+		if (!message.current) return;
+		message.current.softDeleted = true;
 	}
 
-	let reactions = $derived(convertReactionsToEmojis(message.reactions));
+	let reactions = $derived(convertReactionsToEmojis(message.current?.reactions));
 </script>
 
 <div
 	class={cn(
 		'relative flex w-full max-w-full flex-col gap-2 py-1 select-text',
-		!isSameUser && showDivider
+		(!isSameUser || !message.current) && showDivider
 			? 'border-base-200/70 dark:border-base-900/50 border-t pt-2 pb-2'
 			: '-my-1.5'
 	)}
 >
-	{#if message.replyTo && showReply}
-		<ReplyMessage replyToId={message.replyTo} />
+	{#if message.current?.replyTo && showReply}
+		<ReplyMessage replyToId={message.current?.replyTo} />
 	{/if}
 
-	{#if view.highlightedMessage === message.id}
+	{#if view.highlightedMessage === message.current?.id}
 		<div
 			class="bg-accent-500/10 dark:bg-accent-500/5 absolute top-1 -right-1 bottom-2 -left-1 rounded-2xl"
 		></div>
@@ -148,27 +171,33 @@
 		onpointerover={() => (hovering = true)}
 		onpointerleave={() => (hovering = false)}
 	>
-		{#if !isSameUser}
-			<Avatar class="size-8 sm:size-10" src={profile?.current?.imageUrl} image={profile?.current?.image} />
+		{#if !isSameUser || !message.current}
+			<Avatar
+				class="size-8 sm:size-10"
+				src={profile?.current?.imageUrl}
+				image={profile?.current?.image}
+			/>
 		{:else}
 			<div class="size-8 shrink-0 sm:size-10"></div>
 		{/if}
 
 		<div class="flex flex-col gap-1">
-			{#if !isSameUser}
+			{#if !isSameUser || !message.current}
 				<span
 					class="text-accent-600 dark:text-accent-400 flex items-center gap-2 text-sm font-medium"
 				>
-					<span>{profile?.current?.name}</span>
-					<RelativeTime
-						date={message.createdAt}
-						locale="en"
-						class="text-base-600 dark:text-base-400 text-xs"
-					/>
+					<span>{profile?.current?.name ?? 'Loading...'}</span>
+					{#if message.current?.createdAt}
+						<RelativeTime
+							date={message.current?.createdAt}
+							locale="en"
+							class="text-base-600 dark:text-base-400 text-xs"
+						/>
+					{/if}
 				</span>
 			{/if}
 			<Prose>
-				{@html message.content}
+				{@html message.current?.content ?? 'Loading...'}
 			</Prose>
 
 			{#if showReactions}
@@ -178,31 +207,34 @@
 
 		{#if showMenu}
 			<ChatMessageMenu
-				setAsReplyTo={() => setReplyTo(message)}
+				setAsReplyTo={() => setReplyTo(message.current)}
 				{hovering}
 				open={pickerOpen}
 				{reactions}
 				{addReaction}
 				{removeReaction}
 				{allowThreadCreation}
-				createThread={() => createThread(message)}
+				createThread={() => createThread(message.current)}
 				{softDelete}
 				{canSoftDelete}
 			/>
 		{/if}
 	</div>
 
-	{#if message.images && message.images.length > 0}
-		<div class="flex flex-wrap gap-2 ml-12 mb-4">
-			{#each message.images as image}
-				<Image {image} class="max-w-36 max-h-36 rounded-2xl border border-base-200/70 dark:border-base-900/50 object-contain" />
+	{#if message.current?.images && message.current?.images.length > 0}
+		<div class="mb-4 ml-12 flex flex-wrap gap-2">
+			{#each message.current?.images as image}
+				<Image
+					{image}
+					class="border-base-200/70 dark:border-base-900/50 max-h-36 w-full max-w-36 rounded-2xl border object-contain"
+				/>
 			{/each}
 		</div>
 	{/if}
-	{#if showThread && message.thread}
+	{#if showThread && message.current?.thread}
 		<ChatMessageThread
-			threadId={message.thread}
-			lastReadDate={me?.root?.lastRead?.[message.thread]}
+			threadId={message.current?.thread}
+			lastReadDate={me?.root?.lastRead?.[message.current?.thread]}
 		/>
 	{/if}
 </div>

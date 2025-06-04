@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { base } from '$app/paths';
 	import { page } from '$app/state';
-	import { Channel } from '$lib/schema';
+	import { Channel, Message } from '$lib/schema';
 	import { Button } from '@fuxui/base';
 	import type { Loaded } from 'jazz-tools';
 	import { useCurrentRoute } from '$lib/context';
-	import { afterNavigate } from '$app/navigation';
+	import { afterNavigate, goto } from '$app/navigation';
+	import { CoState } from 'jazz-svelte';
 
 	const route = useCurrentRoute();
 
@@ -19,10 +20,20 @@
 		onclick?: () => void;
 	} = $props();
 
+	let lastMessage = $derived(
+		new CoState(Message, channel.mainThread?.timeline?.at(-1), {
+			resolve: {
+				content: true,
+				images: true,
+				reactions: true
+			}
+		})
+	);
+
 	let isNew = $derived.by(() => {
 		if (!lastReadDate) return channel.mainThread?.timeline?.length !== 0;
 		if (!channel.mainThread?.timeline) return false;
-		let date = channel.mainThread.timeline[channel.mainThread.timeline.length - 1]?.createdAt;
+		let date = lastMessage?.current?.createdAt;
 		if (!date) return false;
 
 		return new Date(lastReadDate) < date;
@@ -35,6 +46,9 @@
 	href="/{route.spaceId}/channel/{channel.id}"
 	class="relative w-full justify-start backdrop-blur-none"
 	{onclick}
+	onmousedown={() => {
+		goto(`/${route.spaceId}/channel/${channel.id}`);
+	}}
 >
 	<svg
 		xmlns="http://www.w3.org/2000/svg"

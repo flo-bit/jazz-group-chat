@@ -25,7 +25,7 @@ export const Message = co.map({
 	softDeleted: z.boolean().optional()
 });
 
-export const Timeline = co.list(Message);
+export const Timeline = co.list(z.string());
 
 export const Thread = co.map({
 	name: z.string(),
@@ -46,7 +46,8 @@ export const Space = co.map({
 	channels: co.list(Channel),
 	description: z.string().optional(),
 	emoji: z.string().optional(),
-	members: co.list(co.account())
+	members: co.list(co.account()),
+	version: z.number().optional()
 });
 
 export const SpaceList = co.list(Space);
@@ -88,5 +89,12 @@ export const MyAppAccount = co
 				},
 				profileGroup
 			);
+		}
+
+		// delete all joined spaces that dont have a version tag
+		for (let i = account.root?.joinedSpaces?.length - 1; i >= 0; i--) {
+			if (account.root.joinedSpaces[i].version === undefined) {
+				account.root.joinedSpaces.splice(i, 1);
+			}
 		}
 	});

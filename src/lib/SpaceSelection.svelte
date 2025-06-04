@@ -74,7 +74,7 @@
 				{@const θ = i * angularWidth}
 
 				<div
-					class="border-base-200 dark:bg-base-950 absolute flex h-48 w-48 items-center justify-center rounded-xl border bg-white p-2 text-xl font-bold shadow-lg transition-transform duration-300 hover:z-50 hover:scale-105 dark:border-base-800"
+					class="border-base-200 dark:bg-base-950 dark:border-base-800 absolute flex h-48 w-48 items-center justify-center rounded-xl border bg-white p-2 text-xl font-bold shadow-lg transition-transform duration-300 hover:z-50 hover:scale-105"
 					style="
 			transform:
 			  rotate({θ}deg)

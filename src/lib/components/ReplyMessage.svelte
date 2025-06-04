@@ -55,7 +55,7 @@
 		{#if message.current.softDeleted}
 			<span class="text-base-600 dark:text-base-400 py-1 z-10">Message deleted</span>
 		{:else}
-			<Prose class="truncate z-10">
+			<Prose class="truncate z-10 line-clamp-1">
 				{@html message.current?.content}
 			</Prose>
 		{/if}

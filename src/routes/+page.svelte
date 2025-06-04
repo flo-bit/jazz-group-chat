@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { Button, cn, Heading, Subheading, ThemeToggle } from '@fuxui/base';
+	import { Alert, Button, cn, Heading, Subheading, ThemeToggle } from '@fuxui/base';
 	import { AccountCoState, CoState } from 'jazz-svelte';
 	import { LastReadList, MyAppAccount, SpaceList } from '$lib/schema';
-	import { createSpace } from '$lib/utils';
+	import { createPublicSpacesList, createSpace } from '$lib/utils';
 	import SpaceItem from '$lib/components/SpaceItem.svelte';
 	import CreateSpaceModal from '$lib/components/CreateSpaceModal.svelte';
 	import SpaceSelection from '$lib/SpaceSelection.svelte';
@@ -40,7 +40,7 @@
 	let createNewSpaceModalOpen = $state(false);
 
 	let publicSpaces = $derived(
-		new CoState(SpaceList, 'co_zgqiKqPDZfxYm5AQ7coUB4yG1EL', {
+		new CoState(SpaceList, 'co_zYDfDcLXEjmd2f2co1ix64KotL2', {
 			resolve: {
 				$each: true,
 				$onError: null
@@ -54,6 +54,17 @@
 		if (me.current?.root && !me.current.root.lastRead === null) {
 			me.current.root.lastRead = LastReadList.create({});
 			console.log('created last read list');
+		}
+
+		if (me.current?.root?.joinedSpaces?.length) {
+			for (let i = me.current.root.joinedSpaces.length - 1; i >= 0; i--) {
+				if (
+					me.current.root.joinedSpaces[i] === undefined &&
+					!me.current.root.joinedSpaces[i]?.version
+				) {
+					me.current.root.joinedSpaces.splice(i, 1);
+				}
+			}
 		}
 	});
 
@@ -95,6 +106,13 @@
 
 			Edit
 		</Button>
+
+		<Alert title="Demo only" class="mt-8">
+			<p>
+				This is just a work-in-progress demo, don't expect your spaces/messages/etc to be here
+				forever.
+			</p>
+		</Alert>
 
 		<div class="mt-8 mb-2 flex items-center gap-4">
 			<Subheading>Joined spaces</Subheading>

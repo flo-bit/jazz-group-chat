@@ -1,11 +1,10 @@
 <script lang="ts">
 	import { afterNavigate } from '$app/navigation';
 	import ChatInput from '$lib/components/ChatInput.svelte';
-	import ChatMessage from '$lib/components/ChatMessage.svelte';
 	import TimelineView from '$lib/components/TimelineView.svelte';
 	import { useCurrentRoute } from '$lib/context';
 	import { LastReadList, Message, MyAppAccount, Reaction, Space, Thread } from '$lib/schema';
-	import { joinSpace, publicGroup } from '$lib/utils';
+	import { createMessage, joinSpace, publicGroup } from '$lib/utils';
 	import { AccountCoState, CoState } from 'jazz-svelte';
 	import { co, CoRichText, type Loaded } from 'jazz-tools';
 
@@ -32,13 +31,7 @@
 	let thread = $derived(
 		new CoState(Thread, route.threadId, {
 			resolve: {
-				timeline: {
-					$each: {
-						reactions: {
-							$each: true
-						}
-					}
-				}
+				timeline: true
 			}
 		})
 	);
@@ -84,30 +77,13 @@
 		});
 
 		// add message to channel
-		const message = Message.create(
-			{
-				content: newContent,
-				createdAt: new Date(),
-				updatedAt: new Date(),
-				images: co.list(co.image()).create([...postImages], {
-					owner: publicGroup()
-				}),
-				reactions: co.list(Reaction).create([], {
-					owner: publicGroup()
-				}),
-				replyTo: replyTo?.id,
-				type: 'message'
-			},
-			{
-				owner: publicGroup()
-			}
-		);
+		const message = createMessage(newContent, postImages, replyTo?.id);
 
 		postImages = [];
 
 		replyTo = null;
 
-		thread.current?.timeline?.push(message);
+		thread.current?.timeline?.push(message.id);
 	}
 
 	async function clickJoinSpace() {
@@ -143,7 +119,7 @@
 </script>
 
 <TimelineView
-	timeline={thread.current?.timeline}
+	timeline={thread.current?.timeline ?? []}
 	{setReplyTo}
 	me={me?.current}
 	createThread={() => {}}
