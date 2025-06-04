@@ -28,7 +28,9 @@
 
 	let admin = $derived(new CoState(Account, space.current?.adminId));
 
+	$inspect(space.current);
 	$inspect(admin.current);
+	$inspect(admin.current?.adminId);
 
 	// onMount(() => {
 	// 	setInterval(() => {
