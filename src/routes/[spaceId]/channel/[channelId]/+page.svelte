@@ -16,7 +16,7 @@
 	import { createMessage, createThread, joinSpace, publicGroup } from '$lib/utils';
 	import { Button, Heading, Input, Modal } from '@fuxui/base';
 	import { AccountCoState, CoState } from 'jazz-svelte';
-	import { co, CoRichText, z, type Loaded } from 'jazz-tools';
+	import { Account, co, CoRichText, Group, z, type Loaded } from 'jazz-tools';
 	import { view } from '../../view.svelte';
 	import ChatMessageThread from '$lib/components/ChatMessageThread.svelte';
 	import TimelineView from '$lib/components/TimelineView.svelte';
@@ -25,6 +25,8 @@
 	const route = useCurrentRoute();
 
 	let space = $derived(new CoState(Space, route.spaceId));
+
+	let admin = $derived(new CoState(Account, space.current?.adminId));
 
 	// onMount(() => {
 	// 	setInterval(() => {
@@ -77,11 +79,13 @@
 		}
 	}
 
+	$inspect(admin?.current);
+
 	function handleSubmit() {
-		let newContent = new CoRichText({
-			text: input,
-			owner: publicGroup()
-		});
+		if(!admin?.current) {
+			console.error('no admin');
+			return;
+		}
 
 		let images: string[] = [];
 
@@ -90,8 +94,7 @@
 				images.push(image.id);
 			});
 		}
-
-		const message = createMessage(newContent, images, replyTo?.id);
+		const message = createMessage(input, images, admin?.current, replyTo?.id);
 
 		postImages = [];
 
@@ -198,6 +201,7 @@
 			threadMessage = message;
 			createThreadModalOpen = true;
 		}}
+		admin={admin?.current}
 	/>
 
 	<ChatInput

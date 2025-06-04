@@ -40,26 +40,29 @@ export function createChannel(name: string) {
 }
 
 export function createSpace(name: string, description?: string, emoji?: string) {
-	const group = publicGroup();
-
 	const channel = createChannel('general');
+
+	// user is already admin
+	const adminGroup = Group.create();
+
+	const readerGroup = Group.create();
+	// add reading for everyone
+	readerGroup.addMember('everyone', 'reader');
+	readerGroup.extend(adminGroup);
+
+	const me = Account.getMe();
 
 	const space = Space.create(
 		{
 			name,
-			channels: co.list(Channel).create([channel], {
-				owner: group
-			}),
+			channels: co.list(Channel).create([channel], readerGroup),
 			description,
 			emoji,
-			members: co.list(co.account()).create([Account.getMe()], {
-				owner: group
-			}),
-			version: 1
+			members: co.list(co.account()).create([Account.getMe()], publicGroup()),
+			version: 1,
+			adminId: me.id
 		},
-		{
-			owner: group
-		}
+		readerGroup
 	);
 
 	return space;
@@ -78,6 +81,11 @@ export function isSpaceAdmin(space: Loaded<typeof Space>) {
 	}
 }
 
+export function messageHasAdmin(message: Loaded<typeof Message>, admin: Account) {
+	console.log('messageHasAdmin', message, admin);
+	return admin.canAdmin(message);
+}
+
 export function createPublicSpacesList() {
 	const spaces = SpaceList.create([], {
 		owner: publicGroup()
@@ -86,24 +94,28 @@ export function createPublicSpacesList() {
 	return spaces;
 }
 
-export function createMessage(content: CoRichText, images: string[], replyTo?: string) {
+export function createMessage(input: string, images: string[], admin: Account, replyTo?: string) {
+	const adminGroup = Group.create();
+	adminGroup.addMember(admin, 'admin');
+	const readingGroup = publicGroup('reader');
+	readingGroup.extend(adminGroup);
+
+	const content = new CoRichText({
+		text: input,
+		owner: readingGroup
+	});
+
 	const message = Message.create(
 		{
 			content,
 			createdAt: new Date(),
 			updatedAt: new Date(),
-			images: co.list(z.string()).create([...images], {
-				owner: publicGroup()
-			}),
-			reactions: co.list(Reaction).create([], {
-				owner: publicGroup()
-			}),
+			images: co.list(z.string()).create([...images], readingGroup),
+			reactions: co.list(Reaction).create([], publicGroup()),
 			replyTo: replyTo,
 			type: 'message'
 		},
-		{
-			owner: publicGroup()
-		}
+		readingGroup
 	);
 
 	return message;
@@ -113,13 +125,9 @@ export function createThread(messagesIds: string[], name?: string) {
 	const thread = Thread.create(
 		{
 			name: name || 'New Thread',
-			timeline: Timeline.create([...messagesIds], {
-				owner: publicGroup()
-			})
+			timeline: Timeline.create([...messagesIds], publicGroup())
 		},
-		{
-			owner: publicGroup()
-		}
+		publicGroup()
 	);
 
 	return thread;

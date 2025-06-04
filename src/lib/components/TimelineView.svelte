@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Message, MyAppAccount } from '$lib/schema';
-	import type { Loaded } from 'jazz-tools';
+	import type { Account, Group, Loaded } from 'jazz-tools';
 	import ChatMessage from './ChatMessage.svelte';
 	import { Virtualizer } from 'virtua/svelte';
 	import { page } from '$app/state';
@@ -17,7 +17,8 @@
 		me,
 		createThread,
 		allowThreadCreation = true,
-		showThread = true
+		showThread = true,
+		admin 
 	}: {
 		timeline: string[];
 		setReplyTo: (message: Loaded<typeof Message>) => void;
@@ -25,6 +26,7 @@
 		createThread: (message: Loaded<typeof Message>) => void;
 		allowThreadCreation?: boolean;
 		showThread?: boolean;
+		admin: Loaded<typeof Account>;
 	} = $props();
 
 	setContext('scrollTo', (id: string) => {
@@ -81,6 +83,7 @@
 						{createThread}
 						{allowThreadCreation}
 						{showThread}
+						{admin}
 					/>
 				{/if}
 			{/snippet}

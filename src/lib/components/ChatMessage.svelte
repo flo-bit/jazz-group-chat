@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { ImageDefinition, type Loaded } from 'jazz-tools';
+	import { Account, Group, ImageDefinition, type Loaded } from 'jazz-tools';
 	import { Message, MyAppAccount, MyAppProfile, Reaction, Space } from '$lib/schema';
 	import { cn, Prose } from '@fuxui/base';
 	import { CoState } from 'jazz-svelte';
 	import RelativeTime from 'svelte-relative-time';
-	import { isSpaceAdmin, publicGroup } from '$lib/utils';
+	import { isSpaceAdmin, messageHasAdmin, publicGroup } from '$lib/utils';
 	import ChatMessageMenu from './ChatMessageMenu.svelte';
 	import ChatReactions from './ChatReactions.svelte';
 	import ReplyMessage from './ReplyMessage.svelte';
@@ -25,7 +25,8 @@
 		showDivider = true,
 		showReply = true,
 		showThread = true,
-		allowThreadCreation = true
+		allowThreadCreation = true,
+		admin
 	}: {
 		messageId: string;
 		previousMessageId?: string;
@@ -38,6 +39,7 @@
 		showReply?: boolean;
 		showThread?: boolean;
 		allowThreadCreation?: boolean;
+		admin: Loaded<typeof Account>;
 	} = $props();
 
 	let message = $derived(
@@ -148,6 +150,7 @@
 	let reactions = $derived(convertReactionsToEmojis(message.current?.reactions));
 </script>
 
+{#if admin && message.current && messageHasAdmin(message.current, admin)}
 <div
 	class={cn(
 		'relative flex w-full max-w-full flex-col gap-2 py-1 select-text',
@@ -238,3 +241,4 @@
 		/>
 	{/if}
 </div>
+{/if}

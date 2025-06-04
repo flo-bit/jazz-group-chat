@@ -47,7 +47,8 @@ export const Space = co.map({
 	description: z.string().optional(),
 	emoji: z.string().optional(),
 	members: co.list(co.account()),
-	version: z.number().optional()
+	version: z.number().optional(),
+	adminId: z.string()
 });
 
 export const SpaceList = co.list(Space);
