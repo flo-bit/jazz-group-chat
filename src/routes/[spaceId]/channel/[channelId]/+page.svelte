@@ -28,6 +28,8 @@
 
 	let admin = $derived(new CoState(Account, space.current?.adminId));
 
+	$inspect(admin.current);
+
 	// onMount(() => {
 	// 	setInterval(() => {
 	// 		// post a new random message
