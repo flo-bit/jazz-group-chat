@@ -20,20 +20,23 @@
 		onclick?: () => void;
 	} = $props();
 
-	let lastMessage = $derived(
-		new CoState(Message, channel.mainThread?.timeline?.at(-1), {
-			resolve: {
-				content: true,
-				images: true,
-				reactions: true
-			}
-		})
-	);
+	const latestEntriesByAccount = $derived(Object.values(channel.mainThread?.timeline?.perAccount ?? {}).sort(
+		(a, b) => a.madeAt.getTime() - b.madeAt.getTime()
+	));
+	// let lastMessage = $derived(
+	// 	new CoState(Message, channel.mainThread?.timeline?.at(-1), {
+	// 		resolve: {
+	// 			content: true,
+	// 			images: true,
+	// 			reactions: true
+	// 		}
+	// 	})
+	// );
 
 	let isNew = $derived.by(() => {
-		if (!lastReadDate) return channel.mainThread?.timeline?.length !== 0;
-		if (!channel.mainThread?.timeline) return false;
-		let date = lastMessage?.current?.createdAt;
+		if (!lastReadDate) return latestEntriesByAccount.length !== 0;
+		if (latestEntriesByAccount.length === 0) return false;
+		let date = latestEntriesByAccount.at(-1)?.madeAt;
 		if (!date) return false;
 
 		return new Date(lastReadDate) < date;

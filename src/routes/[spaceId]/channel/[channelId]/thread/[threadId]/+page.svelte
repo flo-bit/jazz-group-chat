@@ -58,17 +58,6 @@
 			console.log('no last read');
 		}
 	}
-	// svelte-ignore state_referenced_locally
-	let count = $state(thread.current?.timeline?.length ?? 0);
-
-	$effect(() => {
-		let newCount = thread.current?.timeline?.length ?? 0;
-		if (count < newCount) {
-			count = newCount;
-
-			setLastRead();
-		}
-	});
 
 	function handleSubmit() {
 		let newContent = new CoRichText({
@@ -76,8 +65,16 @@
 			owner: publicGroup()
 		});
 
+		let images: string[] = [];
+
+		if(postImages.length > 0) {
+			postImages.forEach(image => {
+				images.push(image.id);
+			});
+		}
+
 		// add message to channel
-		const message = createMessage(newContent, postImages, replyTo?.id);
+		const message = createMessage(newContent, images, replyTo?.id);
 
 		postImages = [];
 
@@ -116,10 +113,32 @@
 	}
 
 	let postImages = $state([]);
+
+
+	let timeline = $derived(
+		Object.values(thread.current?.timeline.perAccount ?? {})
+			.map((accountFeed) => new Array(...accountFeed.all))
+			.flat()
+			.sort((a, b) => a.madeAt.getTime() - b.madeAt.getTime())
+			.map((a) => a.value)
+	);
+
+
+	// svelte-ignore state_referenced_locally
+	let count = $state(timeline.length ?? 0);
+
+	$effect(() => {
+		let newCount = timeline.length ?? 0;
+		if (count < newCount) {
+			count = newCount;
+
+			setLastRead();
+		}
+	});
 </script>
 
 <TimelineView
-	timeline={thread.current?.timeline ?? []}
+	{timeline}
 	{setReplyTo}
 	me={me?.current}
 	createThread={() => {}}

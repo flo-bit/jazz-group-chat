@@ -1,4 +1,4 @@
-import { Account, co, CoRichText, Group, type Loaded } from 'jazz-tools';
+import { Account, co, CoRichText, Group, z, type Loaded } from 'jazz-tools';
 import { Channel, Message, Reaction, Space, SpaceList, Thread, Timeline } from './schema';
 
 export function publicGroup(readWrite: 'reader' | 'writer' = 'writer') {
@@ -86,13 +86,13 @@ export function createPublicSpacesList() {
 	return spaces;
 }
 
-export function createMessage(content: CoRichText, images: never[], replyTo?: string) {
+export function createMessage(content: CoRichText, images: string[], replyTo?: string) {
 	const message = Message.create(
 		{
 			content,
 			createdAt: new Date(),
 			updatedAt: new Date(),
-			images: co.list(co.image()).create([...images], {
+			images: co.list(z.string()).create([...images], {
 				owner: publicGroup()
 			}),
 			reactions: co.list(Reaction).create([], {
@@ -107,4 +107,20 @@ export function createMessage(content: CoRichText, images: never[], replyTo?: st
 	);
 
 	return message;
+}
+
+export function createThread(messagesIds: string[], name?: string) {
+	const thread = Thread.create(
+		{
+			name: name || 'New Thread',
+			timeline: Timeline.create([...messagesIds], {
+				owner: publicGroup()
+			})
+		},
+		{
+			owner: publicGroup()
+		}
+	);
+
+	return thread;
 }

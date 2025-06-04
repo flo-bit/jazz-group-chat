@@ -5,7 +5,7 @@ export const Reaction = co.map({
 	emoji: z.string()
 });
 
-export const ImageList = co.list(co.image());
+export const ImageList = co.list(z.string());
 
 export const Image = co.image();
 
@@ -25,7 +25,7 @@ export const Message = co.map({
 	softDeleted: z.boolean().optional()
 });
 
-export const Timeline = co.list(z.string());
+export const Timeline = co.feed(z.string());
 
 export const Thread = co.map({
 	name: z.string(),

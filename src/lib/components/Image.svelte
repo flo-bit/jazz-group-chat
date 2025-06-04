@@ -3,13 +3,17 @@
 	import { type Image } from '$lib/schema';
 	import { onMount } from 'svelte';
 	import { cn } from '@fuxui/base';
+	import { CoState } from 'jazz-svelte';
 
 	let {
 		image,
 		src,
 		class: className,
 		...rest
-	}: { image?: Loaded<typeof Image>; src?: string; class?: string } = $props();
+	}: { image?: string; src?: string; class?: string } = $props();
+
+
+	let loadedImage = $derived(new CoState(ImageDefinition, image));
 
 	onMount(() => {});
 
@@ -29,19 +33,19 @@
 
 		if (!image) return;
 
-		if (!image.subscribe) {
-			if (image.placeholderDataURL) {
-				imageRef.src = image.placeholderDataURL;
+		if (!loadedImage.current?.subscribe) {
+			if (loadedImage.current?.placeholderDataURL) {
+				imageRef.src = loadedImage.current?.placeholderDataURL;
 			}
 			return;
 		}
 
-		unsub = image.subscribe({}, (update) => {
+		unsub = loadedImage.current?.subscribe({}, (update) => {
 			if (!imageRef) return;
 
 			const highestRes = ImageDefinition.highestResAvailable(update);
 			if (!highestRes) {
-				imageRef.src = image.placeholderDataURL ?? '';
+				imageRef.src = loadedImage.current?.placeholderDataURL ?? '';
 				return;
 			}
 
@@ -61,7 +65,7 @@
 
 <div
 	class={cn('relative', className)}
-	style="aspect-ratio: {image?.originalSize[0] ?? 1} / {image?.originalSize[1] ?? 1}"
+	style="aspect-ratio: {loadedImage.current?.originalSize[0] ?? 1} / {loadedImage.current?.originalSize[1] ?? 1}"
 >
 	<img bind:this={imageRef} {...rest} class="absolute inset-0 object-cover w-full h-full" />
 </div>

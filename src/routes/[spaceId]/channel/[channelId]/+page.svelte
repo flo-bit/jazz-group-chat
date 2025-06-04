@@ -13,7 +13,7 @@
 		Thread,
 		Timeline
 	} from '$lib/schema';
-	import { createMessage, joinSpace, publicGroup } from '$lib/utils';
+	import { createMessage, createThread, joinSpace, publicGroup } from '$lib/utils';
 	import { Button, Heading, Input, Modal } from '@fuxui/base';
 	import { AccountCoState, CoState } from 'jazz-svelte';
 	import { co, CoRichText, z, type Loaded } from 'jazz-tools';
@@ -76,17 +76,6 @@
 			console.log('no last read');
 		}
 	}
-	// svelte-ignore state_referenced_locally
-	let count = $state(channel.current?.mainThread?.timeline?.length ?? 0);
-
-	$effect(() => {
-		let newCount = channel.current?.mainThread?.timeline?.length ?? 0;
-		if (count < newCount) {
-			count = newCount;
-
-			setLastRead();
-		}
-	});
 
 	function handleSubmit() {
 		let newContent = new CoRichText({
@@ -94,7 +83,15 @@
 			owner: publicGroup()
 		});
 
-		const message = createMessage(newContent, postImages, replyTo?.id);
+		let images: string[] = [];
+
+		if(postImages.length > 0) {
+			postImages.forEach(image => {
+				images.push(image.id);
+			});
+		}
+
+		const message = createMessage(newContent, images, replyTo?.id);
 
 		postImages = [];
 
@@ -139,23 +136,13 @@
 
 	let postImages = $state([]);
 
-	function createThread() {
+	function createThreadClicked() {
 		if (!threadMessage) {
 			console.error('threadMessage is null');
 			return;
 		}
 
-		const thread = Thread.create(
-			{
-				name: threadName || 'New Thread',
-				timeline: Timeline.create([threadMessage.id], {
-					owner: publicGroup()
-				})
-			},
-			{
-				owner: publicGroup()
-			}
-		);
+		const thread = createThread([threadMessage.id], threadName);
 
 		threadMessage.thread = thread.id;
 
@@ -165,20 +152,46 @@
 	}
 
 	// onMount(() => {
-	// 	// send a random message every second
+	// 	// send a random message every 500ms
 	// 	setInterval(() => {
 	// 		input = '<p>' + Math.random().toString(36).substring(2, 15) + '</p>';
 	// 		handleSubmit();
 
 	// 		// log number of messages
-	// 		console.log('number of messages', channel.current?.mainThread?.timeline?.length);
-	// 	}, 200);
+	// 		console.log('number of messages', timeline.length);
+	// 	}, 500);
+
 	// });
+
+	//$inspect(channel.current?.mainThread?.timeline?.length);
+
+	let timeline = $derived(
+		Object.values(channel.current?.mainThread?.timeline.perAccount ?? {})
+			.map((accountFeed) => new Array(...accountFeed.all))
+			.flat()
+			.sort((a, b) => a.madeAt.getTime() - b.madeAt.getTime())
+			.map((a) => a.value)
+	);
+
+
+	// svelte-ignore state_referenced_locally
+	let count = $state(timeline.length ?? 0);
+
+	$effect(() => {
+		let newCount = timeline?.length ?? 0;
+		if (count < newCount) {
+			count = newCount;
+
+			setLastRead();
+		}
+	});
+
+	$inspect(timeline.length);
 </script>
 
 {#if view.active === 'channel'}
 	<TimelineView
-		timeline={channel.current?.mainThread?.timeline}
+		{timeline}
 		{setReplyTo}
 		me={me?.current ?? null}
 		createThread={(message) => {
@@ -230,7 +243,7 @@
 				/>
 			</div>
 		{/if}
-		<form class="flex flex-col gap-2" onsubmit={createThread}>
+		<form class="flex flex-col gap-2" onsubmit={createThreadClicked}>
 			<Input type="text" placeholder="Thread name" bind:value={threadName} />
 			<Button type="submit">create</Button>
 		</form>

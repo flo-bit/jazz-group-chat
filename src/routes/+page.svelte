@@ -40,7 +40,7 @@
 	let createNewSpaceModalOpen = $state(false);
 
 	let publicSpaces = $derived(
-		new CoState(SpaceList, 'co_zYDfDcLXEjmd2f2co1ix64KotL2', {
+		new CoState(SpaceList, 'co_zQacLFosxPMfpGMnpou99PCQ8L8', {
 			resolve: {
 				$each: true,
 				$onError: null

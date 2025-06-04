@@ -93,7 +93,7 @@
 			<div class="flex gap-2 px-2 pt-2 [&_img]:size-24 [&_img]:rounded-2xl">
 				{#each images as image}
 					<div class="relative">
-						<Image {image} class="size-24 rounded-2xl object-cover" />
+						<Image image={image.id} class="size-24 rounded-2xl object-cover" />
 						<Button
 							size="iconSm"
 							variant="ghost"

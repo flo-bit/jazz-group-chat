@@ -17,20 +17,27 @@
 
 	// get the last message in the thread
 	// let lastMessage = $derived(thread.current?.timeline?.at(-1));
-	let lastMessage = $derived(
-		new CoState(Message, thread.current?.timeline?.at(-1), {
-			resolve: {
-				content: true,
-				images: true,
-				reactions: true
-			}
-		})
-	);
+	// let lastMessage = $derived(
+	// 	new CoState(Message, thread.current?.timeline?.at(-1), {
+	// 		resolve: {
+	// 			content: true,
+	// 			images: true,
+	// 			reactions: true
+	// 		}
+	// 	})
+	// );
+
+
+	const latestEntriesByAccount = $derived(Object.values(thread?.current?.timeline?.perAccount ?? {}).sort(
+		(a, b) => a.madeAt.getTime() - b.madeAt.getTime()
+	));
+
+	const lastMessage = $derived(new CoState(Message, latestEntriesByAccount.at(-1)?.value));
 
 	let isNew = $derived.by(() => {
-		if (!lastReadDate) return thread.current?.timeline?.length !== 0;
-		if (!lastMessage) return false;
-		let date = lastMessage.current?.createdAt;
+		if (!lastReadDate) return latestEntriesByAccount.length !== 0;
+		if (latestEntriesByAccount.length === 0) return false;
+		let date = latestEntriesByAccount.at(-1)?.madeAt;
 		if (!date) return false;
 
 		return new Date(lastReadDate) < date;

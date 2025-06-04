@@ -23,20 +23,24 @@
 	} = $props();
 
 	let thread = $derived(new CoState(Thread, threadId));
-	let lastMessage = $derived(
-		new CoState(Message, thread.current?.timeline?.at(-1), {
-			resolve: {
-				content: true,
-				images: true,
-				reactions: true
-			}
-		})
-	);
+
+	const latestEntriesByAccount = $derived(Object.values(thread.current?.timeline?.perAccount ?? {}).sort(
+		(a, b) => a.madeAt.getTime() - b.madeAt.getTime()
+	));
+	// let lastMessage = $derived(
+	// 	new CoState(Message, thread.current?.timeline?.at(-1), {
+	// 		resolve: {
+	// 			content: true,
+	// 			images: true,
+	// 			reactions: true
+	// 		}
+	// 	})
+	// );
 
 	let isNew = $derived.by(() => {
-		if (!lastReadDate) return thread.current?.timeline?.length !== 0;
-		if (!thread.current?.timeline) return false;
-		let date = lastMessage?.current?.createdAt;
+		if (!lastReadDate) return latestEntriesByAccount.length !== 0;
+		if (latestEntriesByAccount.length === 0) return false;
+		let date = latestEntriesByAccount.at(-1)?.madeAt;
 		if (!date) return false;
 
 		return new Date(lastReadDate) < date;
@@ -45,7 +49,7 @@
 	// is latest message less tha 24 hours old
 	let isRecent = $derived.by(() => {
 		if (!thread.current?.timeline) return false;
-		let date = lastMessage?.current?.createdAt;
+		let date = latestEntriesByAccount.at(-1)?.madeAt;
 		if (!date) return false;
 		return date.getTime() > Date.now() - 1000 * 60 * 60 * 24;
 	});
