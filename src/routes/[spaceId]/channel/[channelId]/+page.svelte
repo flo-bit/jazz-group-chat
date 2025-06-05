@@ -3,34 +3,20 @@
 	import ChatInput from '$lib/components/ChatInput.svelte';
 	import ChatMessage from '$lib/components/ChatMessage.svelte';
 	import { useCurrentRoute } from '$lib/context';
-	import {
-		Channel,
-		LastReadList,
-		Message,
-		MyAppAccount,
-		Reaction,
-		Space,
-		Thread,
-		Timeline
-	} from '$lib/schema';
-	import { createMessage, createThread, joinSpace, publicGroup } from '$lib/utils';
+	import { Channel, LastReadList, Message, MyAppAccount, Space } from '$lib/schema';
+	import { createMessage, createThread, joinSpace } from '$lib/utils';
 	import { Button, Heading, Input, Modal } from '@fuxui/base';
 	import { AccountCoState, CoState } from 'jazz-svelte';
-	import { Account, co, CoRichText, Group, z, type Loaded } from 'jazz-tools';
+	import { Account, type Loaded } from 'jazz-tools';
 	import { view } from '../../view.svelte';
 	import ChatMessageThread from '$lib/components/ChatMessageThread.svelte';
 	import TimelineView from '$lib/components/TimelineView.svelte';
-	import { onMount } from 'svelte';
 
 	const route = useCurrentRoute();
 
 	let space = $derived(new CoState(Space, route.spaceId));
 
 	let admin = $derived(new CoState(Account, space.current?.adminId));
-
-	$inspect(space.current);
-	$inspect(admin.current);
-	$inspect(admin.current?.adminId);
 
 	// onMount(() => {
 	// 	setInterval(() => {
@@ -83,18 +69,16 @@
 		}
 	}
 
-	$inspect(admin?.current);
-
 	function handleSubmit() {
-		if(!admin?.current) {
+		if (!admin?.current) {
 			console.error('no admin');
 			return;
 		}
 
 		let images: string[] = [];
 
-		if(postImages.length > 0) {
-			postImages.forEach(image => {
+		if (postImages.length > 0) {
+			postImages.forEach((image) => {
 				images.push(image.id);
 			});
 		}
@@ -180,7 +164,6 @@
 			.map((a) => a.value)
 	);
 
-
 	// svelte-ignore state_referenced_locally
 	let count = $state(timeline.length ?? 0);
 
@@ -195,6 +178,10 @@
 
 	$inspect(timeline.length);
 </script>
+
+{#if admin?.current}
+	<div class="text-base-600 dark:text-base-400 absolute top-0 right-0"></div>
+{/if}
 
 {#if view.active === 'channel'}
 	<TimelineView
